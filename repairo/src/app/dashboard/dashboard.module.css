@@ -1,0 +1,153 @@
+.page {
+  min-height: 100vh;
+  background: var(--color-muted);
+}
+
+.navbar {
+  position: sticky;
+  top: 0;
+  background: white;
+  box-shadow: var(--shadow-md);
+  z-index: 40;
+}
+
+.navInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  color: var(--color-foreground);
+}
+
+.logoImg {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: var(--shadow-md);
+  object-fit: cover;
+}
+
+.navLinks a {
+  color: var(--color-foreground);
+  opacity: 0.9;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.navLinks a:hover {
+  background: #f3f4f6;
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.user {
+  position: relative;
+}
+
+.userBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  padding: 6px 10px;
+  border-radius: 999px;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.userBtn:hover {
+  background: #f9fafb;
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.dropdown {
+  position: absolute;
+  right: 0;
+  margin-top: 6px;
+  background: white;
+  box-shadow: var(--shadow-md);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+}
+
+.dropdown button {
+  padding: 10px 12px;
+  border: none;
+  background: white;
+  text-align: left;
+}
+
+.dropdown button:hover {
+  background: #f3f4f6;
+}
+
+.main {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+@media (min-width: 980px) {
+  .main {
+    grid-template-columns: 0.3fr 0.7fr;
+  }
+}
+
+.left,
+.right {
+  min-width: 0;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+@media (min-width: 640px) {
+  .stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.stat {
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-left: 4px solid transparent;
+}
+
+.statLabel {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.statValue {
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--color-foreground);
+}
+
+.pending { border-left-color: #f59e0b; }
+.inProgress { border-left-color: #2563eb; }
+.completed { border-left-color: #10b981; }

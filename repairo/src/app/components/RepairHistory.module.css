@@ -1,0 +1,196 @@
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sub {
+  color: #6b7280;
+  margin: 4px 0 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.item {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.infoLeft {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.deviceIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.deviceIconSvg {
+  color: #2563eb;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  margin: 0;
+}
+
+.desc {
+  color: #374151;
+  margin: 0;
+}
+
+.date {
+  color: #6b7280;
+  margin: 0;
+  font-size: 12px;
+}
+
+.statusWrap {
+  display: flex;
+  align-items: center;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.tagPending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.tagProgress {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.tagCompleted {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.rating {
+  display: flex;
+  gap: 4px;
+}
+
+.sep {
+  border: none;
+  height: 1px;
+  background: #e5e7eb;
+  margin: 4px 0;
+}
+
+.rateRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.submitRating {
+  background: var(--color-primary);
+  color: white;
+  font-size: 13px;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease,
+    background .2s ease;
+}
+
+.submitRating:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(37,99,235,0.25);
+  background: #1d4ed8;
+}
+
+.starBtn {
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.star {
+  color: #e5e7eb;
+  transition: color .15s ease, transform .15s ease;
+}
+
+.starFilled {
+  color: #f59e0b;
+  transition: color .15s ease, transform .15s ease;
+}
+
+.starBtn:hover .star,
+.starBtn:focus .star {
+  color: #fbbf24;
+  transform: translateY(-1px);
+}
+
+.statusIcon {
+  margin-right: 6px;
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.statusIconPending {
+  color: #f59e0b;
+}
+
+.statusIconProgress {
+  color: #2563eb;
+}
+
+.statusIconCompleted {
+  color: #10b981;
+}
