@@ -41,7 +41,7 @@ export default function LandingPage() {
               Connect with certified technicians for fast, reliable repairs on all your electronic devices. 
               Eco-friendly solutions that extend your device's lifespan.
             </p>
-            <Link href="/login" className={styles.heroCta}>Get Started <FaArrowRight /></Link>
+            <Link href="/dashboard" className={styles.heroCta}>Get Started <FaArrowRight /></Link>
           </div>
         </div>
       </section>
