@@ -1,0 +1,99 @@
+.page {
+  min-height: 100vh;
+  background: var(--color-muted);
+}
+
+.navbar {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  box-shadow: var(--shadow-md);
+  z-index: 40;
+}
+
+.header {
+  background: #fff;
+  box-shadow: var(--shadow-md);
+}
+
+.headerInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+}
+
+.main {
+  padding: 16px 0;
+  display: grid;
+  gap: 16px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 900px) {
+  .cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.table {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+}
+
+.table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+
+.table th {
+  text-align: left;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.btn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+}
+
+.btnGhost {
+  background: #10b981;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+}

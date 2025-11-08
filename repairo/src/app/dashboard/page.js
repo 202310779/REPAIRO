@@ -1,11 +1,11 @@
 "use client";
-import { useState } from 'react';
-import Link from 'next/link';
-import styles from './dashboard.module.css';
-import { FaUserCircle, FaChevronDown } from 'react-icons/fa';
-import { useRouter } from 'next/navigation';
-import NewRepairRequest from '../components/NewRepairRequest';
-import RepairHistory from '../components/RepairHistory';
+import { useState } from "react";
+import Link from "next/link";
+import styles from "./dashboard.module.css";
+import { FaUserCircle, FaChevronDown } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import NewRepairRequest from "../components/NewRepairRequest";
+import RepairHistory from "../components/RepairHistory";
 
 export default function DashboardPage() {
   const [open, setOpen] = useState(false);
@@ -17,20 +17,38 @@ export default function DashboardPage() {
       <header className={styles.navbar}>
         <div className={`container ${styles.navInner}`}>
           <Link href="/landing" className={styles.brand}>
-            <img className={styles.logoImg} src="/images/logo.png" alt="Repairo logo" />
+            <img
+              className={styles.logoImg}
+              src="/images/logo.png"
+              alt="Repairo logo"
+            />
             <span>Repairo</span>
           </Link>
           <nav className={styles.navLinks}>
             <Link href="/dashboard">Dashboard</Link>
+            <Link href="/dashboard/messages">Messages</Link>
+            <Link href="/dashboard/profile">Profile</Link>
           </nav>
           <div className={styles.user}>
-            <button className={styles.userBtn} onClick={() => setOpen(o=>!o)}>
+            <button
+              className={styles.userBtn}
+              onClick={() => setOpen((o) => !o)}
+            >
               <FaUserCircle size={22} /> <FaChevronDown />
             </button>
             {open && (
               <div className={styles.dropdown}>
-                <button onClick={() => console.log('Change Password')}>Change Password</button>
-                <button onClick={() => { setOpen(false); router.push('/login'); }}>Logout</button>
+                <button onClick={() => console.log("Change Password")}>
+                  Change Password
+                </button>
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    router.push("/login");
+                  }}
+                >
+                  Logout
+                </button>
               </div>
             )}
           </div>

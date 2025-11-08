@@ -36,6 +36,12 @@
   object-fit: cover;
 }
 
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 22px; /* space between nav items */
+}
+
 .navLinks a {
   color: var(--color-foreground);
   opacity: 0.9;
@@ -148,6 +154,12 @@
   color: var(--color-foreground);
 }
 
-.pending { border-left-color: #f59e0b; }
-.inProgress { border-left-color: #2563eb; }
-.completed { border-left-color: #10b981; }
+.pending {
+  border-left-color: #f59e0b;
+}
+.inProgress {
+  border-left-color: #2563eb;
+}
+.completed {
+  border-left-color: #10b981;
+}
