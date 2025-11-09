@@ -3,13 +3,13 @@ import { useState } from "react";
 import Link from "next/link";
 import styles from "./dashboard.module.css";
 import { FaUserCircle, FaChevronDown } from "react-icons/fa";
-import { useRouter } from "next/navigation";
+import { useAuth } from "../../hooks/useAuth";
 import NewRepairRequest from "../components/NewRepairRequest";
 import RepairHistory from "../components/RepairHistory";
 
 export default function DashboardPage() {
   const [open, setOpen] = useState(false);
-  const router = useRouter();
+  const { logout } = useAuth();
 
   return (
     <div className={styles.page}>
@@ -44,7 +44,7 @@ export default function DashboardPage() {
                 <button
                   onClick={() => {
                     setOpen(false);
-                    router.push("/login");
+                    logout();
                   }}
                 >
                   Logout
