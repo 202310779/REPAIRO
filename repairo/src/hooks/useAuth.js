@@ -29,8 +29,9 @@ export function useAuth() {
       setUser(data.user || { email });
       return data;
     } catch (err) {
-      setError(err);
-      throw err;
+      const errorMessage = err?.error || err?.message || 'Login failed';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -44,8 +45,9 @@ export function useAuth() {
       setUser(data.user || { email: payload.email });
       return data;
     } catch (err) {
-      setError(err);
-      throw err;
+      const errorMessage = err?.error || err?.message || 'Registration failed';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -56,6 +58,7 @@ export function useAuth() {
     setUser(null);
     router.push("/login");
   }, [router]);
+
   const loadProfile = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -64,8 +67,9 @@ export function useAuth() {
       if (res?.user) setUser(res.user);
       return res?.user || null;
     } catch (err) {
-      setError(err);
-      throw err;
+      const errorMessage = err?.error || err?.message || 'Failed to load profile';
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
