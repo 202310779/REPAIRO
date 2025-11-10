@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 
-const MONGO_DB_URI = process.env.MONGO_DB_URI;
+const MONGODB_URI = process.env.MONGODB_URI;
 
-if (!MONGO_DB_URI) {
-  throw new Error('Please define MONGO_DB_URI in .env.local');
+if (!MONGODB_URI) {
+  throw new Error('Please define MONGODB_URI in .env.local');
 }
 
 // Cached connection to prevent multiple connections in dev mode
@@ -23,8 +23,9 @@ async function connectDB() {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(MONGO_DB_URI, opts).then((mongoose) => {
-      console.log('✅ MongoDB connected:', mongoose.connection.host);
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+      // Log both host and database name so it's obvious which DB we're using
+      console.log('✅ MongoDB connected:', mongoose.connection.host, 'db:', mongoose.connection.name);
       return mongoose;
     });
   }
