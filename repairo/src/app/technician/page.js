@@ -1,34 +1,11 @@
 "use client";
 import styles from "./technician.module.css";
 import TechNavbar from "./TechNavbar";
+import useAssignedJobs from "../../hooks/useAssignedJobs";
 
 export default function TechnicianDashboard() {
-  const assigned = [
-    {
-      id: 101,
-      client: "Jane Doe",
-      device: "Phone • iPhone 12",
-      issue: "Screen crack",
-      status: "In Progress",
-      date: "2025-11-01",
-    },
-    {
-      id: 102,
-      client: "Mike Ross",
-      device: "Laptop • XPS 13",
-      issue: "Battery issue",
-      status: "Pending",
-      date: "2025-11-03",
-    },
-    {
-      id: 103,
-      client: "Nina Park",
-      device: "Tablet • iPad",
-      issue: "Charging port",
-      status: "Pending",
-      date: "2025-11-04",
-    },
-  ];
+  const { data, loading, error, fallback } = useAssignedJobs();
+  const assigned = Array.isArray(data) && data.length ? data : fallback;
 
   return (
     <div className={styles.page}>
@@ -53,6 +30,12 @@ export default function TechnicianDashboard() {
         </section>
 
         <section className={styles.table}>
+          {loading && <div style={{ padding: 12 }}>Loading assigned jobs…</div>}
+          {error && (
+            <div style={{ padding: 12, color: "#b91c1c" }}>
+              Failed to load from API. Showing sample data.
+            </div>
+          )}
           <table>
             <thead>
               <tr>

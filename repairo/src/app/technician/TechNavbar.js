@@ -1,18 +1,15 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useAuth } from "../../hooks/useAuth";
 import styles from "./profile/profile.module.css";
 import { FaSignOutAlt } from "react-icons/fa";
 
 export default function TechNavbar() {
   const pathname = usePathname();
-  const router = useRouter();
+  const { logout } = useAuth();
   const isActive = (href) => pathname === href;
-  const logout = () => {
-    alert("Logging out (placeholder)");
-    router.push("/login");
-  };
   return (
     <div style={{ marginTop: 8 }}>
       <nav className={styles.nav} style={{ paddingRight: 16 }}>
