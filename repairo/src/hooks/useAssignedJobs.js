@@ -1,40 +1,73 @@
 "use client";
 import { endpoints } from "../constants/api";
 import { useApi } from "./useApi";
+import { useState, useEffect } from "react";
+import { useAuth } from "./useAuth";
 
-const fallbackAssigned = [
-  {
-    id: 101,
-    client: "Jane Doe",
-    device: "Phone • iPhone 12",
-    issue: "Screen crack",
-    status: "In Progress",
-    date: "2025-11-01",
-  },
-  {
-    id: 102,
-    client: "Mike Ross",
-    device: "Laptop • XPS 13",
-    issue: "Battery issue",
-    status: "Pending",
-    date: "2025-11-03",
-  },
-  {
-    id: 103,
-    client: "Nina Park",
-    device: "Tablet • iPad",
-    issue: "Charging port",
-    status: "Pending",
-    date: "2025-11-04",
-  },
-];
+export function useAssignedJobs() {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { user } = useAuth();
 
-export default function useAssignedJobs() {
-  // Try to fetch from API; if it 404s locally, just use fallback in the page
-  const api = useApi({
-    endpoint: endpoints.technician.assigned,
-    immediate: true,
-  });
-  // We don't inject fallback here to keep the hook pure; consumer can decide.
-  return { ...api, fallback: fallbackAssigned };
+  useEffect(() => {
+    const fetchAssignedJobs = async () => {
+      // Don't fetch if no user
+      if (!user || !user._id) {
+        setLoading(false);
+        setJobs([]);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          console.warn("No token found, skipping repairs fetch");
+          setJobs([]);
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch("/api/repairs", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to fetch jobs");
+        }
+
+        const data = await response.json();
+
+        let filteredJobs = Array.isArray(data) ? data : [];
+
+        if (user.role === "technician") {
+          filteredJobs = filteredJobs.filter(
+            (job) => job.technicianId && job.technicianId._id === user._id
+          );
+        }
+
+        setJobs(filteredJobs);
+      } catch (err) {
+        console.error("Error fetching jobs:", err);
+        setError(err.message);
+        setJobs([]); // Set empty array on error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAssignedJobs();
+  }, [user]);
+
+  return { jobs, loading, error };
 }
+
+export default useAssignedJobs;
