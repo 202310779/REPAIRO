@@ -1,6 +1,4 @@
 "use client";
-// src/services/authService.js
-// Central auth service: handles network calls + token persistence.
 
 import RequestService from "./requestService";
 import { endpoints } from "../constants/api";
@@ -51,7 +49,6 @@ function logout() {
   authStorage.clear();
 }
 
-// Dev fallback preserves previous fake behavior when backend missing.
 async function devFallback(fn) {
   try {
     return await fn();
