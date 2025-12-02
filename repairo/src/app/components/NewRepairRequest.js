@@ -1,18 +1,36 @@
 "use client";
-import { useState } from 'react';
-import styles from './NewRepairRequest.module.css';
+import { useState } from "react";
+import styles from "./NewRepairRequest.module.css";
 
-export default function NewRepairRequest() {
-  const initial = { deviceType: '', model: '', issue: '', date: '' };
+export default function NewRepairRequest({ onSubmit: onSubmitCallback }) {
+  const initial = { deviceType: "", model: "", issue: "", date: "" };
   const [form, setForm] = useState(initial);
+
+  // Get today's date in YYYY-MM-DD format for min attribute
+  const today = new Date().toISOString().split("T")[0];
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   const onSubmit = (e) => {
     e.preventDefault();
     if (!form.deviceType || !form.model || !form.issue) return;
-    console.log('Submit repair request', form);
-    // Send to backend API. future enhancement.
-    setForm(initial); 
+
+    // Create repair request object
+    const newRequest = {
+      id: Date.now(), // Temporary ID
+      device: form.deviceType,
+      model: form.model,
+      issue: form.issue,
+      date: form.date || today,
+      status: "Pending",
+    };
+
+    // Call parent callback to add to history
+    if (onSubmitCallback) {
+      onSubmitCallback(newRequest);
+    }
+
+    console.log("Submit repair request", newRequest);
+    setForm(initial);
   };
 
   return (
@@ -29,7 +47,9 @@ export default function NewRepairRequest() {
               onChange={onChange}
               required
             >
-              <option value="" disabled>Select device</option>
+              <option value="" disabled>
+                Select device
+              </option>
               <option>Phone</option>
               <option>Laptop</option>
               <option>Tablet</option>
@@ -40,7 +60,13 @@ export default function NewRepairRequest() {
 
         <label>
           <span>Model</span>
-          <input name="model" value={form.model} onChange={onChange} placeholder="e.g., iPhone 12" required />
+          <input
+            name="model"
+            value={form.model}
+            onChange={onChange}
+            placeholder="e.g., iPhone 12"
+            required
+          />
         </label>
 
         <label>
@@ -57,10 +83,18 @@ export default function NewRepairRequest() {
 
         <label>
           <span>Preferred Date</span>
-          <input type="date" name="date" value={form.date} onChange={onChange} />
+          <input
+            type="date"
+            name="date"
+            value={form.date}
+            onChange={onChange}
+            min={today}
+          />
         </label>
 
-        <button type="submit" className={styles.submit}>Submit Request</button>
+        <button type="submit" className={styles.submit}>
+          Submit Request
+        </button>
       </form>
     </div>
   );

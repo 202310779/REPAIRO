@@ -2,6 +2,28 @@
 import { useCallback, useEffect, useState } from "react";
 import AuthService from "../services/authService";
 
+/**
+ * @typedef {import('@/interfaces/api.types').User} User
+ */
+
+/**
+ * @typedef {Object} UseProfileOptions
+ * @property {boolean} [immediate=true] - Whether to fetch immediately
+ */
+
+/**
+ * @typedef {Object} UseProfileReturn
+ * @property {User | null} profile - User profile data
+ * @property {boolean} loading - Whether request is loading
+ * @property {Error | null} error - Error if any
+ * @property {() => Promise<User | null>} refresh - Refresh profile
+ */
+
+/**
+ * Hook for managing user profile
+ * @param {UseProfileOptions} [options] - Hook options
+ * @returns {UseProfileReturn} Profile state and methods
+ */
 export function useProfile({ immediate = true } = {}) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(immediate);

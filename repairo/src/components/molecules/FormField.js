@@ -1,10 +1,23 @@
-import Input from '../atoms/Input';
+import Input from "../atoms/Input";
 
-export default function FormField({ 
-  label, 
-  error, 
+/**
+ * @typedef {Object} FormFieldProps
+ * @property {string} label - Field label
+ * @property {string} [error] - Error message
+ * @property {boolean} [required=false] - Whether field is required
+ * @property {import('../atoms/Input').InputProps} [inputProps] - Additional input props
+ */
+
+/**
+ * Molecule FormField component combining label, input, and error
+ * @param {FormFieldProps & import('../atoms/Input').InputProps} props
+ * @returns {JSX.Element}
+ */
+export default function FormField({
+  label,
+  error,
   required = false,
-  ...inputProps 
+  ...inputProps
 }) {
   return (
     <div className="mb-4">

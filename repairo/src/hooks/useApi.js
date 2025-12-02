@@ -2,8 +2,33 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import RequestService from "../services/requestService";
 
-// Simple, generic data fetching hook
-// Usage: const {data, loading, error, refetch} = useApi({endpoint: '/repairs'})
+/**
+ * @template T
+ * @typedef {Object} UseApiOptions
+ * @property {string} endpoint - API endpoint path
+ * @property {string} [method='GET'] - HTTP method
+ * @property {any} [body] - Request body
+ * @property {Object} [params] - Query parameters
+ * @property {boolean} [immediate=true] - Whether to fetch immediately
+ * @property {boolean} [withAuth=true] - Include auth token
+ * @property {any[]} [deps=[]] - Additional dependencies for refetch
+ */
+
+/**
+ * @template T
+ * @typedef {Object} UseApiReturn
+ * @property {T | null} data - Response data
+ * @property {boolean} loading - Whether request is loading
+ * @property {Error | null} error - Error if any
+ * @property {() => Promise<void>} refetch - Refetch data
+ */
+
+/**
+ * Generic API fetching hook
+ * @template T
+ * @param {UseApiOptions<T>} options - Hook options
+ * @returns {UseApiReturn<T>} API state and methods
+ */
 export function useApi({
   endpoint,
   method = "GET",

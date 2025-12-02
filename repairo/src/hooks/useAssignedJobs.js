@@ -4,6 +4,21 @@ import { useApi } from "./useApi";
 import { useState, useEffect } from "react";
 import { useAuth } from "./useAuth";
 
+/**
+ * @typedef {import('@/interfaces/api.types').RepairJob} RepairJob
+ */
+
+/**
+ * @typedef {Object} UseAssignedJobsReturn
+ * @property {RepairJob[]} jobs - Array of assigned jobs
+ * @property {boolean} loading - Whether request is loading
+ * @property {string | null} error - Error message if any
+ */
+
+/**
+ * Hook for fetching assigned jobs for current user
+ * @returns {UseAssignedJobsReturn} Jobs state
+ */
 export function useAssignedJobs() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);

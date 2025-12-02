@@ -21,6 +21,12 @@ export const authStorage = {
   },
 };
 
+/**
+ * Login user with email and password
+ * @param {string} email - User email
+ * @param {string} password - User password
+ * @returns {Promise<import('@/interfaces/api.types').AuthResponse>} Authentication response
+ */
 async function login(email, password) {
   const data = await devFallback(() =>
     RequestService.post(
@@ -33,6 +39,15 @@ async function login(email, password) {
   return data;
 }
 
+/**
+ * Register new user
+ * @param {Object} payload - Registration data
+ * @param {string} payload.email - User email
+ * @param {string} payload.password - User password
+ * @param {string} payload.username - Username
+ * @param {string} [payload.role] - User role
+ * @returns {Promise<import('@/interfaces/api.types').AuthResponse>} Authentication response
+ */
 async function register(payload) {
   const data = await devFallback(() =>
     RequestService.post(endpoints.auth.register, payload, { withAuth: false })
@@ -41,10 +56,18 @@ async function register(payload) {
   return data;
 }
 
+/**
+ * Get current user profile
+ * @returns {Promise<{user: import('@/interfaces/api.types').User}>} User profile response
+ */
 async function profile() {
   return devFallback(() => RequestService.get(endpoints.auth.profile));
 }
 
+/**
+ * Logout current user and clear token
+ * @returns {void}
+ */
 function logout() {
   authStorage.clear();
 }

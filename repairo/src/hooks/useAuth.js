@@ -3,6 +3,27 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AuthService from "../services/authService";
 
+/**
+ * @typedef {import('@/interfaces/api.types').User} User
+ * @typedef {import('@/interfaces/api.types').AuthResponse} AuthResponse
+ */
+
+/**
+ * @typedef {Object} UseAuthReturn
+ * @property {(email: string, password: string) => Promise<AuthResponse>} login - Login function
+ * @property {(payload: Object) => Promise<AuthResponse>} register - Register function
+ * @property {() => void} logout - Logout function
+ * @property {() => Promise<User | null>} loadProfile - Load profile function
+ * @property {boolean} isAuthenticated - Whether user is authenticated
+ * @property {User | null} user - Current user data
+ * @property {boolean} loading - Whether request is loading
+ * @property {string | null} error - Error message if any
+ */
+
+/**
+ * Authentication hook for managing user auth state
+ * @returns {UseAuthReturn} Auth state and methods
+ */
 export function useAuth() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -29,7 +50,7 @@ export function useAuth() {
       setUser(data.user || { email });
       return data;
     } catch (err) {
-      const errorMessage = err?.error || err?.message || 'Login failed';
+      const errorMessage = err?.error || err?.message || "Login failed";
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -45,7 +66,7 @@ export function useAuth() {
       setUser(data.user || { email: payload.email });
       return data;
     } catch (err) {
-      const errorMessage = err?.error || err?.message || 'Registration failed';
+      const errorMessage = err?.error || err?.message || "Registration failed";
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -67,7 +88,8 @@ export function useAuth() {
       if (res?.user) setUser(res.user);
       return res?.user || null;
     } catch (err) {
-      const errorMessage = err?.error || err?.message || 'Failed to load profile';
+      const errorMessage =
+        err?.error || err?.message || "Failed to load profile";
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {

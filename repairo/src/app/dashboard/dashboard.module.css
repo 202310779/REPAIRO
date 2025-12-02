@@ -141,6 +141,31 @@
   align-items: center;
   justify-content: space-between;
   border-left: 4px solid transparent;
+  transition: transform 0.2s ease, box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.clickableStat {
+  cursor: pointer;
+}
+
+.clickableStat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.clickableStat:active {
+  transform: translateY(0);
+}
+
+.activeStat {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  box-shadow: 0 0 0 2px var(--color-primary), 0 6px 16px rgba(37, 99, 235, 0.15);
+  transform: scale(1.02);
+}
+
+.activeStat:hover {
+  transform: scale(1.02) translateY(-2px);
 }
 
 .statLabel {

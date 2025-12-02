@@ -3,6 +3,12 @@ import { useState } from "react";
 import styles from "./messages.module.css";
 import techStyles from "../technician.module.css";
 import TechNavbar from "../TechNavbar";
+import {
+  FaComments,
+  FaSearch,
+  FaPaperPlane,
+  FaUserCircle,
+} from "react-icons/fa";
 
 export default function TechnicianMessages() {
   const [threads, setThreads] = useState([
@@ -50,23 +56,21 @@ export default function TechnicianMessages() {
       <div className={`container ${styles.frame}`}>
         <main className={styles.main}>
           <aside className={styles.sidebar}>
-            <h2 className={styles.sidebarTitle}>Clients</h2>
+            <h2 className={styles.sidebarTitle}>
+              <FaComments style={{ color: "#3b82f6" }} /> Clients
+            </h2>
             <div className={styles.sidebarActions}>
               <button
                 type="button"
+                className={styles.newChatBtn}
                 onClick={() => alert("New chat (placeholder)")}
               >
-                New
-              </button>
-              <button
-                type="button"
-                onClick={() => alert("Archive (placeholder)")}
-              >
-                Archive
+                New Chat
               </button>
             </div>
             <div className={styles.search}>
-              <input type="text" placeholder="Search clients" />
+              <FaSearch className={styles.searchIcon} />
+              <input type="text" placeholder="Search clients..." />
             </div>
             <ul className={styles.threadList}>
               {threads.map((t) => (
@@ -95,11 +99,13 @@ export default function TechnicianMessages() {
                   <div
                     style={{ display: "flex", alignItems: "center", gap: 10 }}
                   >
-                    <span className={styles.statusDot} />
-                    <h2 className={styles.chatTitle}>{active.client}</h2>
-                  </div>
-                  <div className={styles.chatMeta}>
-                    Typically replies within 2h
+                    <FaUserCircle style={{ fontSize: 32, color: "#3b82f6" }} />
+                    <div>
+                      <h2 className={styles.chatTitle}>{active.client}</h2>
+                      <div className={styles.chatMeta}>
+                        <span className={styles.statusDot} /> Online
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -131,7 +137,7 @@ export default function TechnicianMessages() {
                     placeholder="Type your message..."
                   />
                   <button className={styles.sendBtn} type="submit">
-                    Send
+                    <FaPaperPlane /> Send
                   </button>
                 </form>
               </div>

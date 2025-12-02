@@ -1,5 +1,17 @@
-import Badge from '../atoms/Badge';
+import Badge from "../atoms/Badge";
 
+/**
+ * @typedef {Object} StatusCardProps
+ * @property {string} label - Card label
+ * @property {number | string} value - Value to display
+ * @property {string} [status] - Status for badge
+ */
+
+/**
+ * Molecule StatusCard component for displaying stat with status
+ * @param {StatusCardProps} props
+ * @returns {JSX.Element}
+ */
 export default function StatusCard({ label, value, status }) {
   return (
     <div className="bg-white p-4 rounded-lg shadow">

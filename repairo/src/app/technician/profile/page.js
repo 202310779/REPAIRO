@@ -1,9 +1,16 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import styles from "./profile.module.css";
-import { FaSignOutAlt, FaPlus, FaRegTrashAlt } from "react-icons/fa";
+import TechNavbar from "../TechNavbar";
+import {
+  FaPlus,
+  FaRegTrashAlt,
+  FaUserCircle,
+  FaCog,
+  FaClock,
+} from "react-icons/fa";
 
 export default function TechnicianProfilePage() {
   const router = useRouter();
@@ -48,36 +55,23 @@ export default function TechnicianProfilePage() {
   }
 
   function saveProfile() {
-    alert("Profile saved (placeholder).\nData would be sent to backend API.");
+    toast.success("Profile saved successfully!");
   }
 
   function handleLogout() {
-    alert("Logging out (placeholder)");
+    toast.success("Logged out successfully");
     router.push("/login");
   }
 
   return (
     <div className={styles.page}>
-      <nav className={styles.nav}>
-        <div className={styles.navLeft}>
-          <span className={styles.brand}>REPAIRO Tech</span>
-          <div className={styles.navLinks}>
-            <Link href="/technician">Dashboard</Link>
-            <Link href="/technician/available">Available</Link>
-            <Link href="/technician/messages">Messages</Link>
-            <Link href="/technician/profile" className={styles.active}>
-              Profile
-            </Link>
-          </div>
-        </div>
-        <button onClick={handleLogout} className={styles.logoutBtn}>
-          <FaSignOutAlt /> Logout
-        </button>
-      </nav>
+      <TechNavbar />
 
-      <div className={styles.grid}>
+      <div className={`container ${styles.grid}`} style={{ paddingTop: 0 }}>
         <section className={styles.card}>
-          <h3>Technician Identity</h3>
+          <h3>
+            <FaUserCircle style={{ color: "#3b82f6" }} /> Technician Identity
+          </h3>
           <div className={styles.avatarWrap}>
             <div className={styles.avatar} aria-label="Avatar preview">
               {avatar ? (
@@ -124,7 +118,9 @@ export default function TechnicianProfilePage() {
         </section>
 
         <section className={styles.card}>
-          <h3>Skills</h3>
+          <h3>
+            <FaCog style={{ color: "#8b5cf6" }} /> Skills & Preferences
+          </h3>
           <div className={styles.skillsList}>
             {skills.map((skill) => (
               <span key={skill} className={styles.skillTag}>
@@ -202,13 +198,15 @@ export default function TechnicianProfilePage() {
         </section>
       </div>
 
-      <section className={styles.card}>
-        <h3>Weekly Availability</h3>
+      <section className={`${styles.card} container`} style={{ marginTop: 22 }}>
+        <h3>
+          <FaClock style={{ color: "#f59e0b" }} /> Weekly Availability
+        </h3>
         <div className={styles.scheduleGrid}>
           {Object.entries(availability).map(([day, slot]) => (
             <div key={day} className={styles.scheduleItem}>
-              <strong style={{ fontSize: 12 }}>{day}</strong>
-              <input
+              <strong style={{ fontSize: 13, color: "#3b82f6" }}>{day}</strong>
+              <select
                 value={slot}
                 onChange={(e) =>
                   setAvailability((prev) => ({
@@ -216,13 +214,29 @@ export default function TechnicianProfilePage() {
                     [day]: e.target.value,
                   }))
                 }
-              />
+              >
+                <option value="Off">Off</option>
+                <option value="8am - 5pm">8am - 5pm</option>
+                <option value="8am - 3pm">8am - 3pm</option>
+                <option value="9am - 6pm">9am - 6pm</option>
+                <option value="10am - 4pm">10am - 4pm</option>
+                <option value="12pm - 8pm">12pm - 8pm</option>
+                <option value="On-call">On-call</option>
+                <option value="Flexible">Flexible</option>
+              </select>
             </div>
           ))}
         </div>
+        <div
+          style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}
+        >
+          <button onClick={saveProfile} className={styles.saveBtn}>
+            Update Availability
+          </button>
+        </div>
       </section>
 
-      <section className={styles.card}>
+      <section className={`${styles.card} container`} style={{ marginTop: 22 }}>
         <h3>Danger Zone</h3>
         <p style={{ fontSize: 14, color: "#6b7280" }}>
           Deleting account will permanently remove technician data and assigned
@@ -230,13 +244,20 @@ export default function TechnicianProfilePage() {
         </p>
         <div className={styles.danger}>
           <span>Proceed with extreme caution.</span>
-          <button onClick={() => alert("Account deletion placeholder")}>
+          <button
+            onClick={() =>
+              toast.error("Account deletion is not available in this demo")
+            }
+          >
             Delete Account <FaRegTrashAlt />
           </button>
         </div>
       </section>
 
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+      <div
+        className="container"
+        style={{ display: "flex", justifyContent: "flex-end", marginTop: 22 }}
+      >
         <button onClick={saveProfile} className={styles.saveBtn}>
           Save Changes
         </button>
