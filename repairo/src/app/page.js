@@ -1,17 +1,65 @@
-import Link from 'next/link';
-import styles from './landing.module.css';
-import { FaLeaf, FaBolt, FaShieldAlt, FaHeadset, FaMapMarkerAlt, FaStar, FaArrowRight } from 'react-icons/fa';
+import Link from "next/link";
+import styles from "./landing.module.css";
+import {
+  FaLeaf,
+  FaBolt,
+  FaShieldAlt,
+  FaHeadset,
+  FaMapMarkerAlt,
+  FaStar,
+  FaArrowRight,
+} from "react-icons/fa";
 
-export const metadata = { title: 'Repairo — Landing' };
+// Force static generation for landing page (SSG)
+export const dynamic = "force-static";
+export const revalidate = false;
+
+export const metadata = {
+  title: "Repairo — Expert Device Repairs",
+  description:
+    "Connect with certified technicians for fast, reliable repairs on all your electronic devices. Eco-friendly solutions that extend your device's lifespan.",
+  keywords:
+    "device repair, phone repair, laptop repair, technician, electronic repair",
+  openGraph: {
+    title: "Repairo — Expert Device Repairs",
+    description:
+      "Connect with certified technicians for fast, reliable repairs",
+    type: "website",
+  },
+};
 
 export default function LandingPage() {
   const features = [
-    { icon: <FaShieldAlt />, title: 'Trusted Technicians', desc: 'Verified professionals for peace of mind.' },
-    { icon: <FaBolt />, title: 'Fast Turnaround', desc: 'Quick diagnostics and efficient repairs.' },
-    { icon: <FaLeaf />, title: 'Eco-Friendly', desc: 'Repair over replace to reduce waste.' },
-    { icon: <FaHeadset />, title: 'Expert Support', desc: 'Get help at every step of your repair.' },
-    { icon: <FaMapMarkerAlt />, title: 'Status Tracking', desc: 'Track your repair status in real time.' },
-    { icon: <FaStar />, title: 'Quality Guarantee', desc: 'Service you can trust and rate.' },
+    {
+      icon: <FaShieldAlt />,
+      title: "Trusted Technicians",
+      desc: "Verified professionals for peace of mind.",
+    },
+    {
+      icon: <FaBolt />,
+      title: "Fast Turnaround",
+      desc: "Quick diagnostics and efficient repairs.",
+    },
+    {
+      icon: <FaLeaf />,
+      title: "Eco-Friendly",
+      desc: "Repair over replace to reduce waste.",
+    },
+    {
+      icon: <FaHeadset />,
+      title: "Expert Support",
+      desc: "Get help at every step of your repair.",
+    },
+    {
+      icon: <FaMapMarkerAlt />,
+      title: "Status Tracking",
+      desc: "Track your repair status in real time.",
+    },
+    {
+      icon: <FaStar />,
+      title: "Quality Guarantee",
+      desc: "Service you can trust and rate.",
+    },
   ];
 
   return (
@@ -20,11 +68,17 @@ export default function LandingPage() {
       <header className={styles.navbar}>
         <div className={`container ${styles.navInner}`}>
           <Link href="/landing" className={styles.brand}>
-            <img className={styles.logoImg} src="/images/logo.png" alt="Repairo logo" />
+            <img
+              className={styles.logoImg}
+              src="/images/logo.png"
+              alt="Repairo logo"
+            />
             <span className={styles.brandText}>Repairo</span>
           </Link>
           <div className={styles.navActions}>
-            <Link href="/login" className={styles.btnGhost}>Login</Link>
+            <Link href="/login" className={styles.btnGhost}>
+              Login
+            </Link>
           </div>
         </div>
       </header>
@@ -38,16 +92,19 @@ export default function LandingPage() {
               <span>Delivered with Trust</span>
             </h1>
             <p>
-              Connect with certified technicians for fast, reliable repairs on all your electronic devices. 
-              Eco-friendly solutions that extend your device's lifespan.
+              Connect with certified technicians for fast, reliable repairs on
+              all your electronic devices. Eco-friendly solutions that extend
+              your device's lifespan.
             </p>
-            <Link href="/dashboard" className={styles.heroCta}>Get Started <FaArrowRight /></Link>
+            <Link href="/dashboard" className={styles.heroCta}>
+              Get Started <FaArrowRight />
+            </Link>
           </div>
         </div>
       </section>
 
       {/* About */}
-      <section id="about" className={styles.about}> 
+      <section id="about" className={styles.about}>
         <div className="container">
           <h2>Why Choose Repairo?</h2>
           <div className={styles.cardsGrid}>
@@ -69,7 +126,9 @@ export default function LandingPage() {
             <h3>Ready to repair smarter?</h3>
             <p>Join Repairo and connect with trusted technicians now.</p>
           </div>
-          <Link href="/login" className={styles.footerCta}>Create Account <FaArrowRight /></Link>
+          <Link href="/login" className={styles.footerCta}>
+            Create Account <FaArrowRight />
+          </Link>
         </div>
       </footer>
     </div>
