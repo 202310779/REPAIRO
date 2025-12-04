@@ -1,16 +1,11 @@
 import { NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 
-// Route configurations
 const PUBLIC_ROUTES = ["/", "/login", "/api/auth/login", "/api/auth/register"];
-
 const API_ROUTES = ["/api/auth/me", "/api/auth/profile", "/api/repairs"];
-
 const USER_ROUTES = ["/dashboard"];
-
 const TECHNICIAN_ROUTES = ["/technician"];
 
-// Security headers
 const SECURITY_HEADERS = {
   "X-DNS-Prefetch-Control": "on",
   "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
@@ -145,7 +140,6 @@ export async function middleware(request) {
     response.headers.set("X-User-Role", decoded.role);
   }
 
-  // Role-based route protection
   const { role } = decoded;
 
   // Technician routes - only for technicians
