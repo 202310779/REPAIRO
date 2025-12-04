@@ -1,6 +1,21 @@
 import { NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 
+// Use Edge Runtime for faster authentication checks
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public files (images, etc.)
+     */
+    "/((?!_next/static|_next/image|favicon.ico|images/).*)",
+  ],
+  runtime: "edge",
+};
+
 const PUBLIC_ROUTES = ["/", "/login", "/api/auth/login", "/api/auth/register"];
 const API_ROUTES = ["/api/auth/me", "/api/auth/profile", "/api/repairs"];
 const USER_ROUTES = ["/dashboard"];
@@ -173,17 +188,3 @@ export async function middleware(request) {
 
   return response;
 }
-
-// Configure which routes the middleware runs on
-export const config = {
-  matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public files (images, etc.)
-     */
-    "/((?!_next/static|_next/image|favicon.ico|images/).*)",
-  ],
-};

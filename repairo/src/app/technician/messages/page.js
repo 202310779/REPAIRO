@@ -1,152 +1,87 @@
-"use client";
-import { useState } from "react";
-import styles from "./messages.module.css";
-import techStyles from "../technician.module.css";
-import TechNavbar from "../TechNavbar";
-import {
-  FaComments,
-  FaSearch,
-  FaPaperPlane,
-  FaUserCircle,
-} from "react-icons/fa";
+import { Suspense } from "react";
+import dynamic from "next/dynamic";
 
-export default function TechnicianMessages() {
-  const [threads, setThreads] = useState([
-    { id: 1, client: "Jane Doe", last: "Thanks for the update", unread: 1 },
-    { id: 2, client: "Mike Ross", last: "When can you start?", unread: 0 },
-  ]);
-  const [activeId, setActiveId] = useState(1);
-  const [input, setInput] = useState("");
-  const messagesInitial = {
-    1: [
-      { from: "client", text: "Screen still flickers." },
-      { from: "tech", text: "I will replace the flex cable." },
-      { from: "client", text: "Thanks for the update" },
-    ],
-    2: [
-      { from: "client", text: "When can you start?" },
-      { from: "tech", text: "I can begin tomorrow morning." },
-    ],
-  };
-  const [messages, setMessages] = useState(messagesInitial);
-  const active = threads.find((t) => t.id === activeId);
+export const metadata = {
+  title: "Messages",
+  description:
+    "Communicate with clients about repair jobs and provide real-time updates on job progress.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
-  function send(e) {
-    e.preventDefault();
-    sendMessage();
-  }
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
 
-  function sendMessage() {
-    if (!input.trim()) return;
-    setMessages((prev) => ({
-      ...prev,
-      [activeId]: [
-        ...(prev[activeId] || []),
-        { from: "tech", text: input.trim() },
-      ],
-    }));
-    setInput("");
-    // note: consider auto-scrolling messages area after render
-  }
-
-  return (
-    <div className={techStyles.page}>
-      <TechNavbar />
-
-      <div className={`container ${styles.frame}`}>
-        <main className={styles.main}>
-          <aside className={styles.sidebar}>
-            <h2 className={styles.sidebarTitle}>
-              <FaComments style={{ color: "#3b82f6" }} /> Clients
-            </h2>
-            <div className={styles.sidebarActions}>
-              <button
-                type="button"
-                className={styles.newChatBtn}
-                onClick={() => alert("New chat (placeholder)")}
-              >
-                New Chat
-              </button>
-            </div>
-            <div className={styles.search}>
-              <FaSearch className={styles.searchIcon} />
-              <input type="text" placeholder="Search clients..." />
-            </div>
-            <ul className={styles.threadList}>
-              {threads.map((t) => (
-                <li key={t.id}>
-                  <button
-                    className={`${styles.threadBtn} ${
-                      t.id === activeId ? styles.threadActive : ""
-                    }`}
-                    onClick={() => setActiveId(t.id)}
-                  >
-                    <span className={styles.threadName}>{t.client}</span>
-                    <span className={styles.threadLast}>{t.last}</span>
-                    {t.unread > 0 && (
-                      <span className={styles.badge}>{t.unread}</span>
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </aside>
-
-          <section className={styles.chat}>
-            {active ? (
-              <div className={styles.chatInner}>
-                <div className={styles.chatHeader}>
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 10 }}
-                  >
-                    <FaUserCircle style={{ fontSize: 32, color: "#3b82f6" }} />
-                    <div>
-                      <h2 className={styles.chatTitle}>{active.client}</h2>
-                      <div className={styles.chatMeta}>
-                        <span className={styles.statusDot} /> Online
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className={styles.messages}>
-                  {(messages[activeId] || []).map((m, i) => (
-                    <div
-                      key={i}
-                      className={`${styles.msg} ${
-                        m.from === "tech" ? styles.msgUser : styles.msgTech
-                      }`}
-                    >
-                      {m.text}
-                      <time>now</time>
-                    </div>
-                  ))}
-                </div>
-
-                <form onSubmit={send} className={styles.inputBar}>
-                  <textarea
-                    className={styles.input}
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        sendMessage();
-                      }
-                    }}
-                    placeholder="Type your message..."
-                  />
-                  <button className={styles.sendBtn} type="submit">
-                    <FaPaperPlane /> Send
-                  </button>
-                </form>
-              </div>
-            ) : (
-              <div className={styles.empty}>Select a conversation.</div>
-            )}
-          </section>
-        </main>
+// Lazy load the client component
+const TechnicianMessagesContent = dynamic(() => import("./MessagesContent"), {
+  loading: () => (
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#f8fafc",
+      }}
+    >
+      <div style={{ textAlign: "center" }}>
+        <div
+          style={{
+            width: "48px",
+            height: "48px",
+            border: "4px solid #e5e7eb",
+            borderTop: "4px solid #3b82f6",
+            borderRadius: "50%",
+            margin: "0 auto 16px",
+            animation: "spin 0.8s linear infinite",
+          }}
+        />
+        <p style={{ color: "#64748b", fontSize: "14px" }}>
+          Loading Messages...
+        </p>
       </div>
     </div>
+  ),
+});
+
+export default function TechnicianMessagesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "#f8fafc",
+          }}
+        >
+          <div style={{ textAlign: "center" }}>
+            <div
+              style={{
+                width: "48px",
+                height: "48px",
+                border: "4px solid #e5e7eb",
+                borderTop: "4px solid #3b82f6",
+                borderRadius: "50%",
+                margin: "0 auto 16px",
+                animation: "spin 0.8s linear infinite",
+              }}
+            />
+            <p style={{ color: "#64748b", fontSize: "14px" }}>
+              Loading Messages...
+            </p>
+          </div>
+        </div>
+      }
+    >
+      <TechnicianMessagesContent />
+    </Suspense>
   );
 }

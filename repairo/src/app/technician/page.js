@@ -1,183 +1,140 @@
-"use client";
-import styles from "./technician.module.css";
-import TechNavbar from "./TechNavbar";
-import useAssignedJobs from "../../hooks/useAssignedJobs";
-import {
-  FaBriefcase,
-  FaSpinner,
-  FaClock,
-  FaCheckCircle,
-  FaTools,
-  FaExclamationTriangle,
-} from "react-icons/fa";
-import Badge from "@/components/atoms/Badge";
-import { JobStatus } from "@/interfaces/api.types";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import nextDynamic from "next/dynamic";
+import { Suspense } from "react";
 
-// Fallback sample data for when API fails
-const fallbackData = [
-  {
-    id: 1,
-    client: "John Doe",
-    device: "iPhone 12",
-    issue: "Screen crack",
-    status: "Pending",
-    date: "2025-12-01",
+// Lazy load TechnicianClient with loading state
+const TechnicianClient = nextDynamic(() => import("./TechnicianClient"), {
+  loading: () => (
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#f8fafc",
+      }}
+    >
+      <div style={{ textAlign: "center" }}>
+        <div
+          style={{
+            width: "56px",
+            height: "56px",
+            border: "5px solid #e5e7eb",
+            borderTop: "5px solid #3b82f6",
+            borderRadius: "50%",
+            margin: "0 auto 20px",
+            animation: "spin 0.8s linear infinite",
+          }}
+        />
+        <p style={{ color: "#64748b", fontSize: "16px", fontWeight: "500" }}>
+          Loading Technician Dashboard...
+        </p>
+      </div>
+    </div>
+  ),
+});
+
+// Force dynamic rendering for authenticated pages (SSR for real-time job data)
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
+
+export const metadata = {
+  title: "Technician Dashboard",
+  description:
+    "Manage your assigned repair jobs, view available requests, track job progress, and communicate with clients.",
+  keywords: [
+    "technician dashboard",
+    "repair jobs",
+    "assigned repairs",
+    "job management",
+    "technician portal",
+  ],
+  openGraph: {
+    title: "Technician Dashboard — Repairo",
+    description: "Manage your assigned repair jobs and track progress.",
+    type: "website",
   },
-  {
-    id: 2,
-    client: "Jane Smith",
-    device: "MacBook Pro",
-    issue: "Battery issue",
-    status: "In Progress",
-    date: "2025-12-02",
+  robots: {
+    index: false, // Don't index authenticated technician pages
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
   },
-];
+};
 
-export default function TechnicianDashboard() {
-  const { jobs, loading, error } = useAssignedJobs();
+export default async function TechnicianPage() {
+  // Server-side auth check
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token");
 
-  // Use jobs if available, otherwise use fallback
-  const assigned =
-    Array.isArray(jobs) && jobs.length > 0
-      ? jobs
-      : error
-      ? fallbackData
-      : jobs || [];
+  if (!token) {
+    redirect("/login?redirect=/technician");
+  }
 
-  const stats = {
-    total: assigned.length,
-    assigned: assigned.filter(
-      (a) => a.status === "Assigned" || a.status === "Pending"
-    ).length,
-    inProgress: assigned.filter((a) => a.status === "In Progress").length,
-    completed: assigned.filter((a) => a.status === "Completed").length,
-  };
+  // Fetch initial assigned jobs on server
+  let initialJobs = [];
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+    const response = await fetch(`${baseUrl}/api/repairs`, {
+      headers: {
+        Authorization: `Bearer ${token.value}`,
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+      next: { revalidate: 0 },
+    });
 
-  const getStatusBadge = (status) => {
-    if (status === "In Progress")
-      return <Badge status="in_progress">{status}</Badge>;
-    if (status === "Completed")
-      return <Badge status="completed">{status}</Badge>;
-    if (status === "Pending") return <Badge status="pending">{status}</Badge>;
-    return <Badge>{status}</Badge>;
-  };
+    if (response.ok) {
+      initialJobs = await response.json();
+    }
+  } catch (error) {
+    console.error("Failed to fetch initial jobs:", error);
+    // Continue with empty array - client will use fallback data
+  }
 
   return (
-    <div className={styles.page}>
-      <TechNavbar />
-
-      <main className={`container ${styles.main}`}>
-        <div className={styles.welcome}>
-          <div>
-            <h1 className={styles.welcomeTitle}>
-              Welcome back, Technician! 👋
-            </h1>
-            <p className={styles.welcomeSubtitle}>
-              Here's your overview for today
+    <Suspense
+      fallback={
+        <div
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "#f8fafc",
+          }}
+        >
+          <div style={{ textAlign: "center" }}>
+            <div
+              style={{
+                width: "56px",
+                height: "56px",
+                border: "5px solid #e5e7eb",
+                borderTop: "5px solid #3b82f6",
+                borderRadius: "50%",
+                margin: "0 auto 20px",
+                animation: "spin 0.8s linear infinite",
+              }}
+            />
+            <p
+              style={{ color: "#64748b", fontSize: "16px", fontWeight: "500" }}
+            >
+              Loading Technician Dashboard...
             </p>
           </div>
-          {error && (
-            <div className={styles.errorBanner}>
-              <FaExclamationTriangle />
-              <span>Failed to load from API. Showing sample data.</span>
-            </div>
-          )}
         </div>
-
-        <section className={styles.cards}>
-          <div className={`${styles.card} ${styles.cardTotal}`}>
-            <div className={styles.cardIcon}>
-              <FaBriefcase size={24} />
-            </div>
-            <div className={styles.cardContent}>
-              <strong className={styles.cardLabel}>Total Jobs</strong>
-              <span className={styles.cardValue}>{stats.total}</span>
-            </div>
-          </div>
-          <div className={`${styles.card} ${styles.cardAssigned}`}>
-            <div className={styles.cardIcon}>
-              <FaClock size={24} />
-            </div>
-            <div className={styles.cardContent}>
-              <strong className={styles.cardLabel}>Assigned</strong>
-              <span className={styles.cardValue}>{stats.assigned}</span>
-            </div>
-          </div>
-          <div className={`${styles.card} ${styles.cardProgress}`}>
-            <div className={styles.cardIcon}>
-              <FaSpinner size={24} />
-            </div>
-            <div className={styles.cardContent}>
-              <strong className={styles.cardLabel}>In Progress</strong>
-              <span className={styles.cardValue}>{stats.inProgress}</span>
-            </div>
-          </div>
-          <div className={`${styles.card} ${styles.cardCompleted}`}>
-            <div className={styles.cardIcon}>
-              <FaCheckCircle size={24} />
-            </div>
-            <div className={styles.cardContent}>
-              <strong className={styles.cardLabel}>Completed</strong>
-              <span className={styles.cardValue}>{stats.completed}</span>
-            </div>
-          </div>
-        </section>
-
-        <section className={styles.tableSection}>
-          <div className={styles.tableHeader}>
-            <h2 className={styles.sectionTitle}>
-              <FaTools /> My Assigned Jobs
-            </h2>
-            {loading && (
-              <span className={styles.loadingText}>
-                <FaSpinner className={styles.spinIcon} /> Loading...
-              </span>
-            )}
-          </div>
-          <div className={styles.tableWrapper}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Client</th>
-                  <th>Device</th>
-                  <th>Issue</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {assigned.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className={styles.emptyState}>
-                      <FaTools size={48} />
-                      <p>No jobs assigned yet</p>
-                      <span>Check the Available tab for new requests</span>
-                    </td>
-                  </tr>
-                ) : (
-                  assigned.map((row) => (
-                    <tr key={row.id}>
-                      <td>
-                        <span className={styles.jobId}>#{row.id}</span>
-                      </td>
-                      <td className={styles.clientCell}>{row.client}</td>
-                      <td>{row.device}</td>
-                      <td className={styles.issueCell}>{row.issue}</td>
-                      <td>{getStatusBadge(row.status)}</td>
-                      <td className={styles.dateCell}>{row.date}</td>
-                      <td>
-                        <button className={styles.btn}>View Details</button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </main>
-    </div>
+      }
+    >
+      <TechnicianClient initialJobs={initialJobs} />
+    </Suspense>
   );
 }
