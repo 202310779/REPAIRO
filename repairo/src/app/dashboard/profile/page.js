@@ -1,6 +1,22 @@
 import nextDynamic from "next/dynamic";
 import { Suspense } from "react";
 
+export const metadata = {
+  title: "Profile",
+  description:
+    "Manage your Repairo profile settings, personal information, and account preferences.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 const ProfileClient = nextDynamic(() => import("./ProfileClient"), {
   loading: () => (
     <div

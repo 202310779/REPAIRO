@@ -35,13 +35,41 @@ const DashboardClient = nextDynamic(() => import("./DashboardClient"), {
   ),
 });
 
-// Force dynamic rendering for authenticated pages
+// Force dynamic rendering for authenticated pages (SSR for real-time data)
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export const metadata = {
-  title: "Dashboard — Repairo",
-  description: "Manage your repair requests and track their status",
+  title: "Dashboard",
+  description:
+    "Manage your repair requests, track device repair status, and communicate with certified technicians in real-time.",
+  keywords: [
+    "repair dashboard",
+    "track repair",
+    "repair status",
+    "manage repairs",
+    "repair history",
+  ],
+  openGraph: {
+    title: "Dashboard — Repairo",
+    description:
+      "Manage your repair requests and track their status in real-time.",
+    type: "website",
+  },
+  robots: {
+    index: false, // Don't index authenticated pages
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
 };
 
 export default async function DashboardPage() {

@@ -44,9 +44,43 @@ const LoginClient = nextDynamic(() => import("./LoginClient"), {
 export const dynamic = "force-static";
 export const revalidate = false;
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export const metadata = {
-  title: "Login — Repairo",
-  description: "Sign in to your Repairo account to manage repair requests",
+  title: "Login",
+  description:
+    "Sign in to your Repairo account to manage repair requests, track device repairs, and connect with certified technicians.",
+  keywords: [
+    "login",
+    "sign in",
+    "account access",
+    "repair dashboard",
+    "technician portal",
+  ],
+  openGraph: {
+    title: "Login — Repairo",
+    description:
+      "Sign in to your Repairo account to manage repair requests and track device repairs.",
+    type: "website",
+    url: "/login",
+    siteName: "Repairo",
+  },
+  twitter: {
+    card: "summary",
+    title: "Login — Repairo",
+    description: "Sign in to your Repairo account to manage repair requests.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  alternates: {
+    canonical: "/login",
+  },
 };
 
 export default function LoginPage() {

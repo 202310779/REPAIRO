@@ -35,13 +35,40 @@ const TechnicianClient = nextDynamic(() => import("./TechnicianClient"), {
   ),
 });
 
-// Force dynamic rendering for authenticated pages
+// Force dynamic rendering for authenticated pages (SSR for real-time job data)
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export const metadata = {
-  title: "Technician Dashboard — Repairo",
-  description: "Manage your assigned repair jobs",
+  title: "Technician Dashboard",
+  description:
+    "Manage your assigned repair jobs, view available requests, track job progress, and communicate with clients.",
+  keywords: [
+    "technician dashboard",
+    "repair jobs",
+    "assigned repairs",
+    "job management",
+    "technician portal",
+  ],
+  openGraph: {
+    title: "Technician Dashboard — Repairo",
+    description: "Manage your assigned repair jobs and track progress.",
+    type: "website",
+  },
+  robots: {
+    index: false, // Don't index authenticated technician pages
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
 };
 
 export default async function TechnicianPage() {

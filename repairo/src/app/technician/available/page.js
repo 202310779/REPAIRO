@@ -1,6 +1,22 @@
 import nextDynamic from "next/dynamic";
 import { Suspense } from "react";
 
+export const metadata = {
+  title: "Available Requests",
+  description:
+    "Browse and accept available repair requests from clients in your service area.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 const AvailableRequestsClient = nextDynamic(
   () => import("./AvailableRequestsClient"),
   {

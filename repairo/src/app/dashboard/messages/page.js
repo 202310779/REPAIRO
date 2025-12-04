@@ -1,6 +1,22 @@
 import nextDynamic from "next/dynamic";
 import { Suspense } from "react";
 
+export const metadata = {
+  title: "Messages",
+  description:
+    "Communicate with technicians about your repair requests and track conversation history.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 const MessagesClient = nextDynamic(() => import("./MessagesClient"), {
   loading: () => (
     <div
