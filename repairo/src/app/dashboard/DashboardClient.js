@@ -99,73 +99,65 @@ export default function DashboardClient({ initialJobs = [] }) {
   const [loading, setLoading] = useState(false);
 
   // Poll for updates every 30 seconds
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem("token");
-        if (!token) return;
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-        const response = await fetch("/api/repairs", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+      const response = await fetch("/api/repairs", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-        if (response.ok) {
-          const data = await response.json();
-          setJobs(Array.isArray(data) ? data : []);
-        }
-      } catch (err) {
-        console.error("Error fetching jobs:", err);
-      } finally {
-        setLoading(false);
+      if (response.ok) {
+        const data = await response.json();
+        setJobs(Array.isArray(data) ? data : []);
       }
-    };
+    } catch (err) {
+      console.error("Error fetching jobs:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const interval = setInterval(fetchJobs, 30000); // 30 seconds
+  useEffect(() => {
+    fetchJobs();
+    const interval = setInterval(fetchJobs, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  // State for repair history items (local demo data)
-  const initialItems = [
-    {
-      id: 1,
-      device: "Phone",
-      model: "iPhone 12",
-      issue: "Screen crack",
-      date: "2025-10-10",
-      status: "Pending",
-    },
-    {
-      id: 2,
-      device: "Laptop",
-      model: "Dell XPS 13",
-      issue: "Battery issue",
-      date: "2025-10-12",
-      status: "In Progress",
-    },
-    {
-      id: 3,
-      device: "Tablet",
-      model: "iPad",
-      issue: "Charging port",
-      date: "2025-10-15",
-      status: "Completed",
-    },
-  ];
-  const [repairItems, setRepairItems] = useState(initialItems);
   const [statusFilter, setStatusFilter] = useState(null);
 
-  const handleNewRepairSubmit = (newRequest) => {
-    setRepairItems((prev) => [newRequest, ...prev]);
+  const handleNewRepairSubmit = (newRepair) => {
+    setJobs((prev) => [newRepair, ...prev]);
   };
 
+  const mapStatus = (status) => {
+    const statusMap = {
+      pending: "Pending",
+      assigned: "Assigned",
+      in_progress: "In Progress",
+      completed: "Completed",
+      cancelled: "Cancelled"
+    };
+    return statusMap[status?.toLowerCase()] || status;
+  };
+
+  const repairItems = jobs.map(job => ({
+    id: job._id,
+    device: job.title?.split(' - ')[0] || "Unknown",
+    model: job.title?.split(' - ')[1] || "",
+    issue: job.description,
+    date: new Date(job.createdAt).toISOString().split('T')[0],
+    status: mapStatus(job.status)
+  }));
+
   const localStats = {
-    pending: repairItems.filter((item) => item.status === "Pending").length,
-    inProgress: repairItems.filter((item) => item.status === "In Progress")
-      .length,
+    pending: repairItems.filter((item) => item.status === "Pending" || item.status === "Assigned").length,
+    inProgress: repairItems.filter((item) => item.status === "In Progress").length,
     completed: repairItems.filter((item) => item.status === "Completed").length,
   };
 
@@ -182,7 +174,7 @@ export default function DashboardClient({ initialJobs = [] }) {
       {/* Navbar */}
       <header className={styles.navbar}>
         <div className={`container ${styles.navInner}`}>
-          <Link href="/" className={styles.brand}>
+          <Link href="/dashboard" className={styles.brand}>
             <img
               className={styles.logoImg}
               src="/images/logo.png"
@@ -204,9 +196,6 @@ export default function DashboardClient({ initialJobs = [] }) {
             </button>
             {open && (
               <div className={styles.dropdown}>
-                <button onClick={() => console.log("Change Password")}>
-                  Change Password
-                </button>
                 <button
                   onClick={() => {
                     setOpen(false);
@@ -280,7 +269,6 @@ export default function DashboardClient({ initialJobs = [] }) {
               <span className={styles.statLabel}>
                 Pending
                 <Badge status={JobStatus.PENDING} style={{ marginLeft: "8px" }}>
-                  {localStats.pending}
                 </Badge>
               </span>
               <span className={styles.statValue}>{localStats.pending}</span>
@@ -302,7 +290,6 @@ export default function DashboardClient({ initialJobs = [] }) {
                   status={JobStatus.IN_PROGRESS}
                   style={{ marginLeft: "8px" }}
                 >
-                  {localStats.inProgress}
                 </Badge>
               </span>
               <span className={styles.statValue}>{localStats.inProgress}</span>
@@ -324,7 +311,6 @@ export default function DashboardClient({ initialJobs = [] }) {
                   status={JobStatus.COMPLETED}
                   style={{ marginLeft: "8px" }}
                 >
-                  {localStats.completed}
                 </Badge>
               </span>
               <span className={styles.statValue}>{localStats.completed}</span>

@@ -112,10 +112,13 @@
   flex-direction: column;
   gap: 4px;
   position: relative;
-  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 .threadBtn:hover {
-  background: #f3f4f6;
+  background: #eff6ff;
+  border-color: #3b82f6;
+  transform: translateX(2px);
 }
 .threadActive {
   background: #2563eb;
@@ -203,13 +206,17 @@
   line-height: 1.4;
   box-shadow: var(--shadow-md);
   position: relative;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 .msg time {
-  position: absolute;
-  bottom: -18px;
-  right: 8px;
   font-size: 10px;
   color: #6b7280;
+  white-space: nowrap;
+  display: block;
+  margin-top: 4px;
 }
 .msgTech {
   background: #f3f4f6;
@@ -219,6 +226,9 @@
   background: #2563eb;
   color: #fff;
   align-self: flex-end;
+}
+.msgUser time {
+  color: rgba(255, 255, 255, 0.7);
 }
 .msgSystem {
   background: #e0f2fe;

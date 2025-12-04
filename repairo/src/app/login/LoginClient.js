@@ -18,21 +18,16 @@ export default function LoginClient() {
 
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
-  const [loginUserType, setLoginUserType] = useState("user");
+  const [loginUserType, setLoginUserType] = useState("customer");
 
   const [signupUsername, setSignupUsername] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
-  const [signupUserType, setSignupUserType] = useState("user");
+  const [signupUserType, setSignupUserType] = useState("customer");
   const [signupPhone, setSignupPhone] = useState("");
   const [signupSkills, setSignupSkills] = useState([]);
   const [signupSkillInput, setSignupSkillInput] = useState("");
-  const [signupCertifications, setSignupCertifications] = useState(null);
-  const [filePreviewUrl, setFilePreviewUrl] = useState(null);
-  const [isDragActive, setIsDragActive] = useState(false);
-  const fileInputRef = useRef(null);
-  const [signupBio, setSignupBio] = useState("");
 
   const addSkill = () => {
     if (
@@ -52,16 +47,15 @@ export default function LoginClient() {
     e.preventDefault();
     try {
       const response = await login(loginEmail, loginPassword);
-      const userRole = response?.user?.role || "user";
+      const userRole = response?.user?.role || "customer";
 
-      // Validate role matches selection
       if (loginUserType === "technician" && userRole !== "technician") {
         toast.error(
-          "This account is not registered as a technician. Please login as a user."
+          "This account is not registered as a technician. Please login as a customer."
         );
         return;
       }
-      if (loginUserType === "user" && userRole === "technician") {
+      if (loginUserType === "customer" && userRole === "technician") {
         toast.error(
           "This account is registered as a technician. Please login as a technician."
         );
@@ -89,8 +83,6 @@ export default function LoginClient() {
         ...(signupUserType === "technician" && {
           phone: signupPhone,
           skills: signupSkills,
-          certifications: signupCertifications?.name,
-          bio: signupBio,
         }),
       });
       toast.success("Account created successfully! Please sign in.");
@@ -101,8 +93,6 @@ export default function LoginClient() {
       setSignupPhone("");
       setSignupSkills([]);
       setSignupSkillInput("");
-      setSignupCertifications(null);
-      setSignupBio("");
       setTimeout(() => {
         setTab("login");
         router.push("/login");
@@ -112,40 +102,7 @@ export default function LoginClient() {
     }
   };
 
-  function handleFile(file) {
-    const allowed = ["application/pdf", "image/png", "image/jpeg", "image/jpg"];
-    if (!allowed.includes(file.type)) {
-      toast.error(
-        `Invalid file type: ${file.type}. Only PDF or images are allowed.`
-      );
-      return;
-    }
-    // revoke previous preview if any
-    if (filePreviewUrl) {
-      URL.revokeObjectURL(filePreviewUrl);
-    }
-    if (file.type.startsWith("image/")) {
-      const url = URL.createObjectURL(file);
-      setFilePreviewUrl(url);
-    } else {
-      setFilePreviewUrl(null);
-    }
-    setSignupCertifications(file);
-  }
 
-  function removeFile() {
-    if (filePreviewUrl) {
-      URL.revokeObjectURL(filePreviewUrl);
-    }
-    setFilePreviewUrl(null);
-    setSignupCertifications(null);
-  }
-
-  useEffect(() => {
-    return () => {
-      if (filePreviewUrl) URL.revokeObjectURL(filePreviewUrl);
-    };
-  }, [filePreviewUrl]);
 
   return (
     <main className={styles.wrapper}>
@@ -188,18 +145,18 @@ export default function LoginClient() {
               <div className={styles.userTypeOptions}>
                 <label
                   className={`${styles.userTypeOption} ${
-                    loginUserType === "user" ? styles.userTypeActive : ""
+                    loginUserType === "customer" ? styles.userTypeActive : ""
                   }`}
                 >
                   <input
                     type="radio"
                     name="loginUserType"
-                    value="user"
-                    checked={loginUserType === "user"}
+                    value="customer"
+                    checked={loginUserType === "customer"}
                     onChange={(e) => setLoginUserType(e.target.value)}
                   />
                   <span className={styles.userTypeIcon}>👤</span>
-                  <span className={styles.userTypeText}>User</span>
+                  <span className={styles.userTypeText}>Customer</span>
                 </label>
                 <label
                   className={`${styles.userTypeOption} ${
@@ -276,18 +233,18 @@ export default function LoginClient() {
               <div className={styles.userTypeOptions}>
                 <label
                   className={`${styles.userTypeOption} ${
-                    signupUserType === "user" ? styles.userTypeActive : ""
+                    signupUserType === "customer" ? styles.userTypeActive : ""
                   }`}
                 >
                   <input
                     type="radio"
                     name="signupUserType"
-                    value="user"
-                    checked={signupUserType === "user"}
+                    value="customer"
+                    checked={signupUserType === "customer"}
                     onChange={(e) => setSignupUserType(e.target.value)}
                   />
                   <span className={styles.userTypeIcon}>👤</span>
-                  <span className={styles.userTypeText}>User</span>
+                  <span className={styles.userTypeText}>Customer</span>
                 </label>
                 <label
                   className={`${styles.userTypeOption} ${
@@ -445,101 +402,6 @@ export default function LoginClient() {
                       ))}
                     </div>
                   )}
-                </label>
-                <label>
-                  <span>Certifications (Upload PDF/Image)</span>
-                  <div
-                    className={`${styles.fileDrop} ${
-                      isDragActive ? styles.fileDropActive : ""
-                    }`}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      setIsDragActive(true);
-                    }}
-                    onDragLeave={(e) => {
-                      e.preventDefault();
-                      setIsDragActive(false);
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      setIsDragActive(false);
-                      const f = e.dataTransfer.files && e.dataTransfer.files[0];
-                      if (f) handleFile(f);
-                    }}
-                    onClick={() => {
-                      if (!signupCertifications && fileInputRef.current) {
-                        fileInputRef.current.click();
-                      }
-                    }}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      className={styles.fileInputHidden}
-                      onChange={(e) => {
-                        const f = e.target.files && e.target.files[0];
-                        if (f) handleFile(f);
-                      }}
-                    />
-
-                    {signupCertifications ? (
-                      <div className={styles.fileInfo}>
-                        {signupCertifications.type?.startsWith("image/") ? (
-                          <img
-                            src={filePreviewUrl}
-                            alt="preview"
-                            className={styles.filePreviewImg}
-                          />
-                        ) : (
-                          <span className={styles.fileIcon}>📄</span>
-                        )}
-                        <div>
-                          <div className={styles.fileName}>
-                            {signupCertifications.name}
-                          </div>
-                          <div className={styles.fileMeta}>
-                            {(signupCertifications.size / 1024).toFixed(1)} KB
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          className={styles.fileRemoveBtn}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            removeFile();
-                          }}
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    ) : (
-                      <div className={styles.filePlaceholder}>
-                        Drag & drop a file here, or click to choose
-                        (PDF/JPG/PNG)
-                      </div>
-                    )}
-                  </div>
-                </label>
-                <label>
-                  <span>Professional Bio</span>
-                  <textarea
-                    placeholder="Tell us about your experience..."
-                    value={signupBio}
-                    onChange={(e) => setSignupBio(e.target.value)}
-                    rows={3}
-                    style={{
-                      padding: "10px 12px",
-                      border: "1px solid #e5e7eb",
-                      borderRadius: "8px",
-                      fontFamily: "inherit",
-                      fontSize: "14px",
-                      resize: "vertical",
-                    }}
-                  />
                 </label>
               </>
             )}

@@ -27,23 +27,32 @@ export async function POST(request) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
-    // Build token payload (exclude sensitive fields)
     const payload = {
       sub: String(user._id),
       email: user.email,
-      role: user.role || "user",
+      role: user.role || "customer",
     };
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
-    // Safe user shape to send back
     const safeUser = {
       _id: user._id,
       email: user.email,
       username: user.username,
-      role: user.role || "user",
+      role: user.role || "customer",
     };
 
-    return NextResponse.json({ token, user: safeUser }, { status: 200 });
+    // Create response with cookie
+    const response = NextResponse.json({ token, user: safeUser }, { status: 200 });
+    
+    // Set HttpOnly cookie
+    response.cookies.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7 // 7 days
+    });
+
+    return response;
   } catch (err) {
     console.error("Login error:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });

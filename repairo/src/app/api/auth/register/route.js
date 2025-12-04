@@ -9,7 +9,15 @@ const { JWT_SECRET = "", JWT_EXPIRES_IN = "7d" } = process.env;
 export async function POST(request) {
   try {
     await connectDB();
-    const { email, username, password, confirmPassword } = await request.json();
+    const { 
+      email, 
+      username, 
+      password, 
+      confirmPassword, 
+      role,
+      phone,
+      skills
+    } = await request.json();
 
     if (!email || !username || !password || !confirmPassword) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -27,6 +35,8 @@ export async function POST(request) {
         return NextResponse.json({ error: 'Passwords do not match' }, { status: 400 });
     }
 
+    const userRole = role === 'technician' ? 'technician' : 'customer';
+
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const existingUser = await User.findOne({ email });
@@ -38,27 +48,39 @@ export async function POST(request) {
       email,
       username,
       password: hashedPassword,
+      role: userRole,
+      ...(userRole === 'technician' && {
+        phone,
+        skills: Array.isArray(skills) ? skills : []
+      })
     });
 
     await newUser.save();
 
-    // Generate token for auto-login after registration
     const payload = {
       sub: String(newUser._id),
       email: newUser.email,
-      role: newUser.role || "user",
+      role: newUser.role,
     };
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
-    // Safe user shape to send back
     const safeUser = {
       _id: newUser._id,
       email: newUser.email,
       username: newUser.username,
-      role: newUser.role || "user",
+      role: newUser.role,
     };
 
-    return NextResponse.json({ token, user: safeUser, message: 'User created successfully' }, { status: 201 });
+    const response = NextResponse.json({ token, user: safeUser, message: 'User created successfully' }, { status: 201 });
+    
+    response.cookies.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7
+    });
+
+    return response;
   } catch (error) {
     console.error('Register error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

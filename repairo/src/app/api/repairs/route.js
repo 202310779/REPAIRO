@@ -11,17 +11,38 @@ export async function GET(request) {
   try {
     await connectDB();
 
-    // Get user info from middleware headers
-    const userId = request.headers.get("X-User-Id");
-    const userRole = request.headers.get("X-User-Role");
+    // Try to get user info from headers first (set by middleware)
+    let userId = request.headers.get("X-User-Id");
+    let userRole = request.headers.get("X-User-Role");
+
+    // If not in headers, try to decode from token directly
+    if (!userId) {
+      const authHeader = request.headers.get("authorization");
+      const token = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
+      
+      if (token) {
+        try {
+          const jwt = require("jsonwebtoken");
+          const decoded = jwt.verify(token, process.env.JWT_SECRET);
+          userId = decoded.sub || decoded.userId || decoded.id;
+          userRole = decoded.role || "customer";
+        } catch (err) {
+          console.error("Token verification failed:", err.message);
+        }
+      }
+    }
+
+    console.log("GET /api/repairs - User context:", { userId, userRole });
 
     let query = {};
 
     // Filter based on user role
     if (userRole === "technician" && userId) {
       query.technicianId = userId;
-    } else if (userRole === "user" && userId) {
+      console.log("GET /api/repairs - Filtering by technicianId:", userId);
+    } else if ((userRole === "customer" || userRole === "user") && userId) {
       query.userId = userId;
+      console.log("GET /api/repairs - Filtering by userId:", userId);
     }
 
     const items = await Repair.find(query)
@@ -30,6 +51,8 @@ export async function GET(request) {
       .limit(50)
       .sort({ createdAt: -1 })
       .lean();
+
+    console.log("GET /api/repairs - Found items:", items.length, "Query:", JSON.stringify(query));
 
     // Add cache control headers
     const response = NextResponse.json(items, { status: 200 });
@@ -51,8 +74,35 @@ export async function POST(request) {
   try {
     await connectDB();
 
-    const userId = request.headers.get("X-User-Id");
+    // Try to get userId from headers first (set by middleware)
+    let userId = request.headers.get("X-User-Id");
+    let userRole = request.headers.get("X-User-Role");
+    
+    // If not in headers, try to decode from token directly
     if (!userId) {
+      const authHeader = request.headers.get("authorization");
+      const token = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
+      
+      if (token) {
+        try {
+          const jwt = require("jsonwebtoken");
+          const decoded = jwt.verify(token, process.env.JWT_SECRET);
+          userId = decoded.sub || decoded.userId || decoded.id;
+          userRole = decoded.role || "customer";
+        } catch (err) {
+          console.error("Token verification failed:", err.message);
+        }
+      }
+    }
+    
+    console.log("POST /api/repairs - User context:", {
+      userId,
+      userRole,
+      hasAuth: !!request.headers.get("authorization"),
+    });
+    
+    if (!userId) {
+      console.error("POST /api/repairs - No userId found");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

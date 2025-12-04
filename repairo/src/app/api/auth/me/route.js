@@ -15,7 +15,7 @@ export async function GET(request) {
     if (token === 'dev-token') {
       return NextResponse.json({
         success: true,
-        user: { id: 'dev', email: 'dev@example.com', name: 'Dev User', role: 'user' }
+        user: { id: 'dev', email: 'dev@example.com', name: 'Dev User', role: 'customer' }
       });
     }
 

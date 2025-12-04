@@ -49,7 +49,6 @@ function formatDate(dateStr) {
 }
 
 export default function RepairHistory({ items = [], filterStatus = null }) {
-  const [ratings, setRatings] = useState({});
   const [selectedItem, setSelectedItem] = useState(null);
   const [mounted, setMounted] = useState(false);
 
@@ -83,12 +82,6 @@ export default function RepairHistory({ items = [], filterStatus = null }) {
       return () => window.removeEventListener("keydown", handleEscape);
     }
   }, [selectedItem, mounted]);
-
-  const setRating = (id, value) =>
-    setRatings((prev) => ({ ...prev, [id]: value }));
-  const submitRating = (id) => {
-    console.log("Submit rating", { id, rating: ratings[id] || 0 });
-  };
 
   const tagClass = (status) =>
     status === "Pending"
@@ -152,40 +145,6 @@ export default function RepairHistory({ items = [], filterStatus = null }) {
                 </span>
               </div>
             </div>
-            {item.status === "Completed" && (
-              <>
-                <hr className={styles.sep} />
-                <div className={styles.rateRow}>
-                  <div className={styles.rating}>
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <button
-                        key={n}
-                        type="button"
-                        className={styles.starBtn}
-                        aria-label={`${n} star${n > 1 ? "s" : ""}`}
-                        onClick={() => setRating(item.id, n)}
-                      >
-                        <span
-                          className={
-                            (ratings[item.id] || 0) >= n
-                              ? styles.starFilled
-                              : styles.star
-                          }
-                        >
-                          ★
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                  <button
-                    className={styles.submitRating}
-                    onClick={() => submitRating(item.id)}
-                  >
-                    Submit Rating
-                  </button>
-                </div>
-              </>
-            )}
           </div>
         ))}
       </div>

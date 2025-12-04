@@ -1,6 +1,7 @@
 "use client";
-import { Suspense } from "react";
+import { Suspense, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
+import { toast } from "sonner";
 import styles from "../technician.module.css";
 import {
   FaTools,
@@ -26,36 +27,76 @@ const TechNavbar = dynamic(() => import("../TechNavbar"), {
 });
 
 export default function AvailableRequestsClient() {
-  const available = [
-    {
-      id: 201,
-      device: "Phone",
-      model: "Pixel 8",
-      issue: "Speaker not working",
-      posted: "2025-11-01",
-      priority: "high",
-    },
-    {
-      id: 202,
-      device: "Laptop",
-      model: "MacBook Air",
-      issue: "Overheating",
-      posted: "2025-11-02",
-      priority: "medium",
-    },
-    {
-      id: 203,
-      device: "Appliance",
-      model: "Blender",
-      issue: "Motor jam",
-      posted: "2025-11-03",
-      priority: "low",
-    },
-  ];
+  const [available, setAvailable] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  function claim(id) {
-    alert(`Claim request ${id} (placeholder)`);
+  const fetchAvailableJobs = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+
+      console.log("Fetching available jobs...");
+      const response = await fetch("/api/repairs/available", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("Available jobs response status:", response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Available jobs data:", data);
+        setAvailable(Array.isArray(data) ? data : []);
+      } else {
+        const error = await response.json();
+        console.error("Failed to fetch available jobs:", error);
+        toast.error(error.error || "Failed to fetch available jobs");
+      }
+    } catch (err) {
+      console.error("Error fetching available jobs:", err);
+      toast.error("Failed to fetch available jobs");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAvailableJobs();
+  }, []);
+
+  async function claim(id) {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const response = await fetch(`/api/repairs/${id}/claim`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        toast.success("Job claimed successfully!");
+        fetchAvailableJobs(); // Refresh to remove claimed job from list
+      } else {
+        const error = await response.json();
+        toast.error(error.error || "Failed to claim job");
+      }
+    } catch (err) {
+      console.error("Error claiming job:", err);
+      toast.error("Failed to claim job");
+    }
   }
+
+
 
   const getDeviceIcon = (device) => {
     if (device === "Phone") return <FaMobileAlt />;
@@ -118,43 +159,67 @@ export default function AvailableRequestsClient() {
                 </tr>
               </thead>
               <tbody>
-                {available.map((r) => (
-                  <tr key={r.id}>
-                    <td>
-                      <span className={styles.jobId}>#{r.id}</span>
-                    </td>
-                    <td>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 10,
-                        }}
-                      >
-                        <span style={{ color: "#2563eb", fontSize: 18 }}>
-                          {getDeviceIcon(r.device)}
-                        </span>
-                        <div>
-                          <div style={{ fontWeight: 500 }}>{r.device}</div>
-                          <div style={{ fontSize: 12, color: "#64748b" }}>
-                            {r.model}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className={styles.issueCell}>{r.issue}</td>
-                    <td>{getPriorityBadge(r.priority)}</td>
-                    <td className={styles.dateCell}>{r.posted}</td>
-                    <td>
-                      <button
-                        className={styles.btnGhost}
-                        onClick={() => claim(r.id)}
-                      >
-                        Claim Job
-                      </button>
+                {loading ? (
+                  <tr>
+                    <td colSpan="6" style={{ textAlign: "center", padding: "20px" }}>
+                      Loading available jobs...
                     </td>
                   </tr>
-                ))}
+                ) : available.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" style={{ textAlign: "center", padding: "20px" }}>
+                      No available jobs at the moment
+                    </td>
+                  </tr>
+                ) : (
+                  available.map((r) => (
+                    <tr key={r._id || r.id}>
+                      <td>
+                        <span className={styles.jobId}>
+                          #{r._id?.toString().slice(-6) || r.id}
+                        </span>
+                      </td>
+                      <td>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                          }}
+                        >
+                          <span style={{ color: "#2563eb", fontSize: 18 }}>
+                            {getDeviceIcon(r.title?.split(" - ")[0] || r.device)}
+                          </span>
+                          <div>
+                            <div style={{ fontWeight: 500 }}>
+                              {r.title || r.device}
+                            </div>
+                            <div style={{ fontSize: 12, color: "#64748b" }}>
+                              {r.userId?.username || "Customer"}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className={styles.issueCell}>
+                        {r.description || r.issue}
+                      </td>
+                      <td>{getPriorityBadge(r.priority || "medium")}</td>
+                      <td className={styles.dateCell}>
+                        {r.createdAt
+                          ? new Date(r.createdAt).toLocaleDateString()
+                          : r.posted}
+                      </td>
+                      <td>
+                        <button
+                          className={styles.btnGhost}
+                          onClick={() => claim(r._id || r.id)}
+                        >
+                          Claim Job
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

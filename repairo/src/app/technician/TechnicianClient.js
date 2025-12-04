@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, Suspense } from "react";
 import dynamic from "next/dynamic";
+import { toast } from "sonner";
 import styles from "./technician.module.css";
 import {
   FaBriefcase,
@@ -27,63 +28,75 @@ const TechNavbar = dynamic(() => import("./TechNavbar"), {
 });
 
 // Fallback sample data for when API fails
-const fallbackData = [
-  {
-    id: 1,
-    client: "John Doe",
-    device: "iPhone 12",
-    issue: "Screen crack",
-    status: "Pending",
-    date: "2025-12-01",
-  },
-  {
-    id: 2,
-    client: "Jane Smith",
-    device: "MacBook Pro",
-    issue: "Battery issue",
-    status: "In Progress",
-    date: "2025-12-02",
-  },
-];
-
 export default function TechnicianClient({ initialJobs = [] }) {
-  const [jobs, setJobs] = useState(
-    initialJobs.length > 0 ? initialJobs : fallbackData
-  );
+  const [jobs, setJobs] = useState(initialJobs);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Poll for updates every 30 seconds
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const token = localStorage.getItem("token");
-        if (!token) return;
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-        const response = await fetch("/api/repairs", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+      const response = await fetch("/api/repairs", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-        if (response.ok) {
-          const data = await response.json();
-          setJobs(Array.isArray(data) && data.length > 0 ? data : fallbackData);
-        }
-      } catch (err) {
-        console.error("Error fetching jobs:", err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
+      if (response.ok) {
+        const data = await response.json();
+        setJobs(Array.isArray(data) ? data : []);
+      } else {
+        setError("Failed to fetch jobs");
       }
-    };
+    } catch (err) {
+      console.error("Error fetching jobs:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const interval = setInterval(fetchJobs, 30000); // 30 seconds
+  useEffect(() => {
+    fetchJobs();
+    const interval = setInterval(fetchJobs, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  async function markCompleted(id) {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const response = await fetch(`/api/repairs/${id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: "Completed" }),
+      });
+
+      if (response.ok) {
+        toast.success("Job marked as completed!");
+        fetchJobs(); // Refresh the list
+      } else {
+        const error = await response.json();
+        toast.error(error.error || "Failed to mark job as completed");
+      }
+    } catch (err) {
+      console.error("Error marking job as completed:", err);
+      toast.error("Failed to mark job as completed");
+    }
+  }
+
+  function goToMessages() {
+    window.location.href = `/technician/messages`;
+  }
 
   const assigned = Array.isArray(jobs) ? jobs : [];
 
@@ -92,7 +105,6 @@ export default function TechnicianClient({ initialJobs = [] }) {
     assigned: assigned.filter(
       (a) => a.status === "Assigned" || a.status === "Pending"
     ).length,
-    inProgress: assigned.filter((a) => a.status === "In Progress").length,
     completed: assigned.filter((a) => a.status === "Completed").length,
   };
 
@@ -158,15 +170,6 @@ export default function TechnicianClient({ initialJobs = [] }) {
               <span className={styles.cardValue}>{stats.assigned}</span>
             </div>
           </div>
-          <div className={`${styles.card} ${styles.cardProgress}`}>
-            <div className={styles.cardIcon}>
-              <FaSpinner size={24} />
-            </div>
-            <div className={styles.cardContent}>
-              <strong className={styles.cardLabel}>In Progress</strong>
-              <span className={styles.cardValue}>{stats.inProgress}</span>
-            </div>
-          </div>
           <div className={`${styles.card} ${styles.cardCompleted}`}>
             <div className={styles.cardIcon}>
               <FaCheckCircle size={24} />
@@ -213,17 +216,40 @@ export default function TechnicianClient({ initialJobs = [] }) {
                   </tr>
                 ) : (
                   assigned.map((row) => (
-                    <tr key={row.id}>
+                    <tr key={row._id || row.id}>
                       <td>
-                        <span className={styles.jobId}>#{row.id}</span>
+                        <span className={styles.jobId}>#{row._id?.toString().slice(-6) || row.id}</span>
                       </td>
-                      <td className={styles.clientCell}>{row.client}</td>
-                      <td>{row.device}</td>
-                      <td className={styles.issueCell}>{row.issue}</td>
+                      <td className={styles.clientCell}>
+                        {row.userId?.username || row.client || "Unknown"}
+                      </td>
+                      <td>{row.title || row.device}</td>
+                      <td className={styles.issueCell}>
+                        {row.description || row.issue}
+                      </td>
                       <td>{getStatusBadge(row.status)}</td>
-                      <td className={styles.dateCell}>{row.date}</td>
+                      <td className={styles.dateCell}>
+                        {row.createdAt ? new Date(row.createdAt).toLocaleDateString() : row.date}
+                      </td>
                       <td>
-                        <button className={styles.btn}>View Details</button>
+                        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
+                          {row.status !== "Completed" && (
+                            <button
+                              className={styles.btn}
+                              onClick={() => markCompleted(row._id || row.id)}
+                              style={{ fontSize: "13px", padding: "6px 12px" }}
+                            >
+                              Job Completed
+                            </button>
+                          )}
+                          <button
+                            className={styles.btnGhost}
+                            onClick={goToMessages}
+                            style={{ fontSize: "13px", padding: "6px 12px" }}
+                          >
+                            View Messages
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))

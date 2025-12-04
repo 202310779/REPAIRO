@@ -82,7 +82,7 @@ async function devFallback(fn) {
           () =>
             resolve({
               token: "dev-token",
-              user: { email: "dev@example.com", role: "user" },
+              user: { email: "dev@example.com", role: "customer" },
             }),
           250
         )

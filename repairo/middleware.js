@@ -17,8 +17,7 @@ export const config = {
 };
 
 const PUBLIC_ROUTES = ["/", "/login", "/api/auth/login", "/api/auth/register"];
-const API_ROUTES = ["/api/auth/me", "/api/auth/profile", "/api/repairs"];
-const USER_ROUTES = ["/dashboard"];
+const CUSTOMER_ROUTES = ["/dashboard"];
 const TECHNICIAN_ROUTES = ["/technician"];
 
 const SECURITY_HEADERS = {
@@ -42,7 +41,7 @@ async function verifyToken(token) {
     const { payload } = await jwtVerify(token, secret);
 
     const userId = payload.userId || payload.id || payload.sub;
-    const role = payload.role || "user";
+    const role = payload.role || "customer";
 
     if (!userId) return null;
 
@@ -136,6 +135,7 @@ export async function middleware(request) {
   if (!decoded) {
     // Invalid token - clear cookie and redirect/return error
     if (pathname.startsWith("/api/")) {
+      console.error("Middleware - Token verification failed for:", pathname);
       return NextResponse.json(
         { error: "Unauthorized - Invalid token" },
         { status: 401 }
@@ -149,15 +149,33 @@ export async function middleware(request) {
     return redirectResponse;
   }
 
-  // Add user info to request headers for API routes
-  if (pathname.startsWith("/api/")) {
-    response.headers.set("X-User-Id", decoded.userId);
-    response.headers.set("X-User-Role", decoded.role);
-  }
-
   const { role } = decoded;
 
-  // Technician routes - only for technicians
+  // Add user info to request headers for API routes
+  if (pathname.startsWith("/api/")) {
+    console.log("Middleware - Setting headers for API route:", pathname, {
+      userId: decoded.userId,
+      role: decoded.role,
+    });
+    
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("X-User-Id", decoded.userId);
+    requestHeaders.set("X-User-Role", decoded.role);
+    
+    const modifiedResponse = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+    
+    // Add security headers
+    Object.entries(SECURITY_HEADERS).forEach(([key, value]) => {
+      modifiedResponse.headers.set(key, value);
+    });
+    
+    return modifiedResponse;
+  }
+
   if (matchesRoute(pathname, TECHNICIAN_ROUTES)) {
     if (role !== "technician" && role !== "admin") {
       if (pathname.startsWith("/api/")) {
@@ -170,17 +188,15 @@ export async function middleware(request) {
     }
   }
 
-  // User routes - redirect technicians to their dashboard
-  if (matchesRoute(pathname, USER_ROUTES)) {
-    if (role === "technician") {
+  if (matchesRoute(pathname, CUSTOMER_ROUTES)) {
+    if (role === "technician" || role === "admin") {
       return NextResponse.redirect(new URL("/technician", request.url));
     }
   }
 
-  // Prevent authenticated users from accessing login page
   if (pathname === "/login") {
     const dashboardUrl =
-      role === "technician"
+      role === "technician" || role === "admin"
         ? new URL("/technician", request.url)
         : new URL("/dashboard", request.url);
     return NextResponse.redirect(dashboardUrl);

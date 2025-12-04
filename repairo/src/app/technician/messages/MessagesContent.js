@@ -1,5 +1,5 @@
 "use client";
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import dynamic from "next/dynamic";
 import styles from "./messages.module.css";
 import techStyles from "../technician.module.css";
@@ -9,6 +9,7 @@ import {
   FaPaperPlane,
   FaUserCircle,
 } from "react-icons/fa";
+import { toast } from "sonner";
 
 // Lazy load TechNavbar
 const TechNavbar = dynamic(() => import("../TechNavbar"), {
@@ -25,41 +26,179 @@ const TechNavbar = dynamic(() => import("../TechNavbar"), {
 });
 
 export default function TechnicianMessagesContent() {
-  const [threads, setThreads] = useState([
-    { id: 1, client: "Jane Doe", last: "Thanks for the update", unread: 1 },
-    { id: 2, client: "Mike Ross", last: "When can you start?", unread: 0 },
-  ]);
-  const [activeId, setActiveId] = useState(1);
+  const [conversations, setConversations] = useState([]);
+  const [activeRepairId, setActiveRepairId] = useState(null);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const messagesInitial = {
-    1: [
-      { from: "client", text: "Screen still flickers." },
-      { from: "tech", text: "I will replace the flex cable." },
-      { from: "client", text: "Thanks for the update" },
-    ],
-    2: [
-      { from: "client", text: "When can you start?" },
-      { from: "tech", text: "I can begin tomorrow morning." },
-    ],
+  const [loading, setLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  const fetchConversations = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const response = await fetch("/api/messages", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setConversations(Array.isArray(data) ? data : []);
+        
+        // Check if there's a repairId in the URL query params
+        const urlParams = new URLSearchParams(window.location.search);
+        const repairIdFromUrl = urlParams.get("repairId");
+        
+        if (repairIdFromUrl) {
+          setActiveRepairId(repairIdFromUrl);
+        } else if (data.length > 0 && !activeRepairId) {
+          setActiveRepairId(data[0].repairId);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching conversations:", err);
+    }
   };
-  const [messages, setMessages] = useState(messagesInitial);
-  const active = threads.find((t) => t.id === activeId);
+
+  const fetchMessages = async (repairId) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const response = await fetch(`/api/messages?repairId=${repairId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error("Error fetching messages:", err);
+    }
+  };
+
+  const fetchCurrentUser = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const response = await fetch("/api/auth/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentUser(data.user);
+      }
+    } catch (err) {
+      console.error("Error fetching user:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchConversations();
+    fetchCurrentUser();
+  }, []);
+
+  useEffect(() => {
+    if (activeRepairId) {
+      fetchMessages(activeRepairId);
+    }
+  }, [activeRepairId]);
+
+  useEffect(() => {
+    if (activeRepairId && conversations.length > 0) {
+      // If we don't have this conversation in our list, fetch the repair details
+      const existingConv = conversations.find(c => c.repairId === activeRepairId);
+      if (!existingConv) {
+        fetchRepairDetails(activeRepairId);
+      }
+    }
+  }, [activeRepairId, conversations]);
+
+  const fetchRepairDetails = async (repairId) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const response = await fetch(`/api/repairs/${repairId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const repair = await response.json();
+        // Add this repair as a new conversation placeholder
+        setConversations(prev => {
+          const exists = prev.find(c => c.repairId === repairId);
+          if (!exists && repair.userId) {
+            return [...prev, {
+              repairId: repair._id,
+              otherParty: repair.userId,
+              lastMessage: "Start a conversation...",
+              unreadCount: 0,
+            }];
+          }
+          return prev;
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching repair details:", err);
+    }
+  };
+
+  const activeConversation = conversations.find(
+    (c) => c.repairId === activeRepairId
+  );
 
   function send(e) {
     e.preventDefault();
     sendMessage();
   }
 
-  function sendMessage() {
-    if (!input.trim()) return;
-    setMessages((prev) => ({
-      ...prev,
-      [activeId]: [
-        ...(prev[activeId] || []),
-        { from: "tech", text: input.trim() },
-      ],
-    }));
-    setInput("");
+  async function sendMessage() {
+    if (!input.trim() || !activeRepairId) return;
+
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const response = await fetch("/api/messages", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          repairId: activeRepairId,
+          content: input.trim(),
+        }),
+      });
+
+      if (response.ok) {
+        setInput("");
+        await fetchMessages(activeRepairId);
+        await fetchConversations();
+      } else {
+        toast.error("Failed to send message");
+      }
+    } catch (err) {
+      console.error("Error sending message:", err);
+      toast.error("Failed to send message");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -98,18 +237,24 @@ export default function TechnicianMessagesContent() {
               <input type="text" placeholder="Search clients..." />
             </div>
             <ul className={styles.threadList}>
-              {threads.map((t) => (
-                <li key={t.id}>
+              {conversations.map((conv) => (
+                <li key={conv.repairId}>
                   <button
                     className={`${styles.threadBtn} ${
-                      t.id === activeId ? styles.threadActive : ""
+                      conv.repairId === activeRepairId ? styles.threadActive : ""
                     }`}
-                    onClick={() => setActiveId(t.id)}
+                    onClick={() => setActiveRepairId(conv.repairId)}
                   >
-                    <span className={styles.threadName}>{t.client}</span>
-                    <span className={styles.threadLast}>{t.last}</span>
-                    {t.unread > 0 && (
-                      <span className={styles.badge}>{t.unread}</span>
+                    <span className={styles.threadName}>
+                      {conv.otherParty?.username || "Unknown"}
+                    </span>
+                    <span className={styles.threadLast}>
+                      {conv.lastMessage || "No messages"}
+                    </span>
+                    {conv.unreadCount > 0 && (
+                      <span className={styles.unreadBadge}>
+                        {conv.unreadCount}
+                      </span>
                     )}
                   </button>
                 </li>
@@ -118,7 +263,7 @@ export default function TechnicianMessagesContent() {
           </aside>
 
           <section className={styles.chat}>
-            {active ? (
+            {activeConversation ? (
               <div className={styles.chatInner}>
                 <div className={styles.chatHeader}>
                   <div
@@ -126,7 +271,9 @@ export default function TechnicianMessagesContent() {
                   >
                     <FaUserCircle style={{ fontSize: 32, color: "#3b82f6" }} />
                     <div>
-                      <h2 className={styles.chatTitle}>{active.client}</h2>
+                      <h2 className={styles.chatTitle}>
+                        {activeConversation.otherParty?.username || "Unknown"}
+                      </h2>
                       <div className={styles.chatMeta}>
                         <span className={styles.statusDot} /> Online
                       </div>
@@ -135,17 +282,21 @@ export default function TechnicianMessagesContent() {
                 </div>
 
                 <div className={styles.messages}>
-                  {(messages[activeId] || []).map((m, i) => (
-                    <div
-                      key={i}
-                      className={`${styles.msg} ${
-                        m.from === "tech" ? styles.msgUser : styles.msgTech
-                      }`}
-                    >
-                      {m.text}
-                      <time>now</time>
-                    </div>
-                  ))}
+                  {messages.map((msg, i) => {
+                    const senderId = typeof msg.senderId === 'object' ? msg.senderId._id : msg.senderId;
+                    const isCurrentUser = String(senderId) === String(currentUser?._id);
+                    return (
+                      <div
+                        key={msg._id || i}
+                        className={`${styles.msg} ${
+                          isCurrentUser ? styles.msgUser : styles.msgTech
+                        }`}
+                      >
+                        <div>{msg.content}</div>
+                        <time>{new Date(msg.createdAt).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })} {new Date(msg.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}</time>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <form onSubmit={send} className={styles.inputBar}>

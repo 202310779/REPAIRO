@@ -1,36 +1,63 @@
 "use client";
 import { useState } from "react";
+import { toast } from "sonner";
 import styles from "./NewRepairRequest.module.css";
 
 export default function NewRepairRequest({ onSubmit: onSubmitCallback }) {
+  const getTodayDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const initial = { deviceType: "", model: "", issue: "", date: "" };
   const [form, setForm] = useState(initial);
-
-  // Get today's date in YYYY-MM-DD format for min attribute
-  const today = new Date().toISOString().split("T")[0];
+  const [loading, setLoading] = useState(false);
+  const [minDate] = useState(getTodayDate());
 
   const onChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-  const onSubmit = (e) => {
+  
+  const onSubmit = async (e) => {
     e.preventDefault();
     if (!form.deviceType || !form.model || !form.issue) return;
 
-    // Create repair request object
-    const newRequest = {
-      id: Date.now(), // Temporary ID
-      device: form.deviceType,
-      model: form.model,
-      issue: form.issue,
-      date: form.date || today,
-      status: "Pending",
-    };
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("/api/repairs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: `${form.deviceType} - ${form.model}`,
+          description: form.issue,
+          status: "Pending",
+        }),
+      });
 
-    // Call parent callback to add to history
-    if (onSubmitCallback) {
-      onSubmitCallback(newRequest);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to create repair request");
+      }
+
+      const newRepair = await response.json();
+      toast.success("Repair request submitted successfully!");
+      
+      if (onSubmitCallback) {
+        onSubmitCallback(newRepair);
+      }
+
+      setForm(initial);
+    } catch (err) {
+      console.error("Error submitting repair request:", err);
+      toast.error(err.message || "Failed to submit repair request");
+    } finally {
+      setLoading(false);
     }
-
-    console.log("Submit repair request", newRequest);
-    setForm(initial);
   };
 
   return (
@@ -88,12 +115,15 @@ export default function NewRepairRequest({ onSubmit: onSubmitCallback }) {
             name="date"
             value={form.date}
             onChange={onChange}
-            min={today}
+            min={minDate}
           />
+          <small style={{ color: "#64748b", fontSize: "0.875rem" }}>
+            Select a future date for your repair
+          </small>
         </label>
 
-        <button type="submit" className={styles.submit}>
-          Submit Request
+        <button type="submit" className={styles.submit} disabled={loading}>
+          {loading ? "Submitting..." : "Submit Request"}
         </button>
       </form>
     </div>

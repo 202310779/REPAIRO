@@ -89,7 +89,9 @@
 
 @media (min-width: 1024px) {
   .cards {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 900px;
+    margin: 0 auto;
   }
 }
 
@@ -363,4 +365,197 @@
 
 .btnGhost:active {
   transform: translateY(0);
+}
+
+/* Navbar Styles - Matching Customer Dashboard */
+.navInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  color: var(--color-foreground);
+  text-decoration: none;
+}
+
+.logoImg {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: var(--shadow-md);
+  object-fit: cover;
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.navLinks a {
+  color: var(--color-foreground);
+  opacity: 0.9;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background 0.2s ease, color 0.2s ease;
+  text-decoration: none;
+}
+
+.navLinks a:hover {
+  background: #f3f4f6;
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.user {
+  position: relative;
+}
+
+.userBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  padding: 6px 10px;
+  border-radius: 999px;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.userBtn:hover {
+  background: #f9fafb;
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.dropdown {
+  position: absolute;
+  right: 0;
+  margin-top: 6px;
+  background: white;
+  box-shadow: var(--shadow-md);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  z-index: 50;
+}
+
+.dropdown button {
+  padding: 10px 12px;
+  border: none;
+  background: white;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.dropdown button:hover {
+  background: #f3f4f6;
+}
+
+/* Logout Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modalTitle {
+  margin: 0 0 12px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.modalText {
+  margin: 0 0 24px 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.modalActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.modalCancel,
+.modalConfirm {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.modalCancel {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.modalCancel:hover {
+  background: #e2e8f0;
+}
+
+.modalConfirm {
+  background: #ef4444;
+  color: white;
+}
+
+.modalConfirm:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
 }

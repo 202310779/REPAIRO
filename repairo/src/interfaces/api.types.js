@@ -1,57 +1,84 @@
-// ============================================
-// TYPE DEFINITIONS (JSDoc)
-// ============================================
-
 /**
  * @typedef {Object} User
- * @property {string} _id - User unique identifier
- * @property {string} username - Username
- * @property {string} email - User email address
- * @property {string} password - Hashed password
- * @property {'customer' | 'technician' | 'admin'} role - User role
- * @property {'active' | 'inactive' | 'pending'} [status] - User status
- * @property {Date} createdAt - Account creation date
- * @property {Date} [updatedAt] - Last update date
+ * User entity representing both customers and technicians in the system
+ * @property {string} _id - MongoDB unique identifier (ObjectId as string)
+ * @property {string} username - User's display name (3-50 characters)
+ * @property {string} email - User's email address (unique, 5-100 characters)
+ * @property {string} password - Hashed password (never sent to client in responses)
+ * @property {'customer' | 'technician' | 'admin'} role - User's role in the system
+ * @property {string} [phone] - Phone number (required for technicians)
+ * @property {string[]} [skills] - Array of skill names (technician only)
+ * @property {string} [certifications] - Certifications description (technician only)
+ * @property {string} [bio] - Professional bio (technician only)
+ * @property {Date} createdAt - Account creation timestamp
+ * @property {Date} [updatedAt] - Last modification timestamp
  */
 
 /**
  * @typedef {Object} RepairJob
- * @property {string} _id - Job unique identifier
- * @property {string} title - Job title
- * @property {string} description - Job description
- * @property {string} issueDescription - Issue description
- * @property {string} deviceType - Type of device
- * @property {'pending' | 'assigned' | 'in_progress' | 'completed' | 'cancelled'} status - Job status
- * @property {'low' | 'medium' | 'high' | 'urgent'} [priority] - Job priority
- * @property {number} [estimatedCost] - Estimated cost
- * @property {string} [technicianId] - Assigned technician ID
- * @property {string} [customerId] - Customer ID
- * @property {Date} createdAt - Job creation date
- * @property {Date} [updatedAt] - Last update date
+ * Repair request entity connecting customers with technicians
+ * @property {string} _id - MongoDB unique identifier
+ * @property {string} title - Brief repair title (e.g., "Phone - iPhone 12")
+ * @property {string} description - Detailed issue description
+ * @property {'Pending' | 'Assigned' | 'In Progress' | 'Completed' | 'Cancelled'} status - Current repair status
+ * @property {string} userId - Customer ID who created the request (ObjectId reference)
+ * @property {string} [technicianId] - Assigned technician ID (ObjectId reference, null if unclaimed)
+ * @property {Date} createdAt - Request creation timestamp
+ * @property {Date} updatedAt - Last modification timestamp
+ */
+
+/**
+ * @typedef {Object} Message
+ * Message entity for customer-technician communication
+ * @property {string} _id - MongoDB unique identifier
+ * @property {string} senderId - Sender user ID (ObjectId reference)
+ * @property {string} receiverId - Receiver user ID (ObjectId reference)
+ * @property {string} repairId - Associated repair request ID (ObjectId reference)
+ * @property {string} content - Message text content (max 2000 characters)
+ * @property {boolean} read - Whether message has been read by receiver
+ * @property {Date} createdAt - Message creation timestamp
  */
 
 /**
  * @typedef {Object} AuthResponse
- * @property {string} token - JWT authentication token
- * @property {User} user - Authenticated user data
- * @property {string} [message] - Optional message
+ * Response from authentication endpoints (login/register)
+ * @property {string} token - JWT authentication token (expires in 7 days)
+ * @property {User} user - Authenticated user data (password excluded)
+ * @property {string} [message] - Success message
  */
 
 /**
  * @template T
  * @typedef {Object} ApiResponse
- * @property {T} [data] - Response data
+ * Generic API response wrapper
+ * @property {T} [data] - Response payload of type T
  * @property {boolean} success - Whether request was successful
- * @property {string} [message] - Response message
- * @property {string} [error] - Error message if failed
+ * @property {string} [message] - Success/info message
+ * @property {string} [error] - Error message if request failed
  */
 
 /**
  * @typedef {Object} DashboardStats
- * @property {number} total - Total jobs
- * @property {number} pending - Pending jobs
- * @property {number} inProgress - In progress jobs
- * @property {number} completed - Completed jobs
+ * Statistics for dashboard overview
+ * @property {number} total - Total number of repair jobs
+ * @property {number} pending - Number of pending/assigned jobs
+ * @property {number} inProgress - Number of jobs in progress
+ * @property {number} completed - Number of completed jobs
+ */
+
+/**
+ * @typedef {Object} Conversation
+ * Conversation summary for messages list
+ * @property {string} repairId - Associated repair request ID
+ * @property {Object} repair - Repair summary object
+ * @property {string} repair._id - Repair ID
+ * @property {string} repair.title - Repair title
+ * @property {string} repair.status - Repair status
+ * @property {User} customer - Customer user object
+ * @property {User} technician - Technician user object
+ * @property {string} lastMessage - Last message content
+ * @property {Date} lastMessageTime - Last message timestamp
+ * @property {number} unreadCount - Number of unread messages for current user
  */
 
 // ============================================

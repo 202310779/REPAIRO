@@ -1,50 +1,113 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import styles from "./messages.module.css";
 
 export default function MessagesClient() {
-  const [threads, setThreads] = useState([
-    {
-      id: 1,
-      technician: "Alex Tech",
-      last: "Let me know if the part arrived.",
-      unread: 2,
-    },
-    {
-      id: 2,
-      technician: "Maria Fix",
-      last: "Battery replaced successfully.",
-      unread: 0,
-    },
-  ]);
-  const [activeId, setActiveId] = useState(1);
+  const [conversations, setConversations] = useState([]);
+  const [activeRepairId, setActiveRepairId] = useState(null);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const activeThread = threads.find((t) => t.id === activeId);
-  const [messages, setMessages] = useState({
-    1: [
-      { from: "tech", text: "Diagnostics complete, need a new display." },
-      { from: "user", text: "Okay, please proceed." },
-      { from: "tech", text: "Let me know if the part arrived." },
-    ],
-    2: [
-      { from: "tech", text: "Battery replaced successfully." },
-      { from: "user", text: "Great, thanks!" },
-    ],
-  });
+  const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
 
-  function sendMessage(e) {
-    e.preventDefault();
-    if (!input.trim()) return;
-    setMessages((prev) => ({
-      ...prev,
-      [activeId]: [
-        ...(prev[activeId] || []),
-        { from: "user", text: input.trim() },
-      ],
-    }));
-    setInput("");
+  useEffect(() => {
+    fetchConversations();
+    fetchCurrentUser();
+  }, []);
+
+  useEffect(() => {
+    if (activeRepairId) {
+      fetchMessages(activeRepairId);
+    }
+  }, [activeRepairId]);
+
+  async function fetchCurrentUser() {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("/api/auth/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentUser(data.user);
+      }
+    } catch (err) {
+      console.error("Error fetching user:", err);
+    }
   }
+
+  async function fetchConversations() {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch("/api/messages", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setConversations(data);
+        if (data.length > 0 && !activeRepairId) {
+          setActiveRepairId(data[0].repairId);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching conversations:", err);
+      toast.error("Failed to load conversations");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function fetchMessages(repairId) {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`/api/messages?repairId=${repairId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data);
+      }
+    } catch (err) {
+      console.error("Error fetching messages:", err);
+    }
+  }
+
+  async function sendMessage(e) {
+    e.preventDefault();
+    if (!input.trim() || !activeRepairId) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("/api/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          repairId: activeRepairId,
+          content: input.trim(),
+        }),
+      });
+
+      if (response.ok) {
+        const newMessage = await response.json();
+        setMessages(prev => [...prev, newMessage]);
+        setInput("");
+        fetchConversations();
+      } else {
+        toast.error("Failed to send message");
+      }
+    } catch (err) {
+      console.error("Error sending message:", err);
+      toast.error("Failed to send message");
+    }
+  }
+
+  const activeConversation = conversations.find(c => c.repairId === activeRepairId);
 
   return (
     <div className={styles.page}>
@@ -60,70 +123,73 @@ export default function MessagesClient() {
         <main className={styles.main}>
           <aside className={styles.sidebar}>
             <h2 className={styles.sidebarTitle}>Conversations</h2>
-            <div className={styles.sidebarActions}>
-              <button
-                type="button"
-                onClick={() => alert("New chat (placeholder)")}
-              >
-                New
-              </button>
-              <button
-                type="button"
-                onClick={() => alert("Archive (placeholder)")}
-              >
-                Archive
-              </button>
-            </div>
             <div className={styles.search}>
               <input type="text" placeholder="Search technicians" />
             </div>
-            <ul className={styles.threadList}>
-              {threads.map((t) => (
-                <li key={t.id}>
-                  <button
-                    className={`${styles.threadBtn} ${
-                      t.id === activeId ? styles.threadActive : ""
-                    }`}
-                    onClick={() => setActiveId(t.id)}
-                  >
-                    <span className={styles.threadName}>{t.technician}</span>
-                    <span className={styles.threadLast}>{t.last}</span>
-                    {t.unread > 0 && (
-                      <span className={styles.badge}>{t.unread}</span>
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ul>
+            {conversations.length === 0 ? (
+              <div style={{ padding: "20px", textAlign: "center", color: "#64748b" }}>
+                <p>No conversations yet</p>
+                <p style={{ fontSize: "0.875rem", marginTop: "8px" }}>
+                  Messages will appear here once a technician accepts your repair request
+                </p>
+              </div>
+            ) : (
+              <ul className={styles.threadList}>
+                {conversations.map((conv) => (
+                  <li key={conv.repairId}>
+                    <button
+                      className={`${styles.threadBtn} ${
+                        conv.repairId === activeRepairId ? styles.threadActive : ""
+                      }`}
+                      onClick={() => setActiveRepairId(conv.repairId)}
+                    >
+                      <span className={styles.threadName}>
+                        {conv.technician?.username || "Technician"}
+                      </span>
+                      <span className={styles.threadLast}>
+                        {conv.repair?.title || "Repair Request"}
+                      </span>
+                      {conv.unreadCount > 0 && (
+                        <span className={styles.badge}>{conv.unreadCount}</span>
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </aside>
           <section className={styles.chat}>
-            {activeThread ? (
+            {activeConversation ? (
               <div className={styles.chatInner}>
                 <div className={styles.chatHeader}>
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 10 }}
-                  >
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <span className={styles.statusDot} />
                     <h2 className={styles.chatTitle}>
-                      {activeThread.technician}
+                      {activeConversation.technician?.username || "Technician"}
                     </h2>
                   </div>
                   <div className={styles.chatMeta}>
-                    Typically replies within 2h
+                    {activeConversation.repair?.title}
                   </div>
                 </div>
                 <div className={styles.messages}>
-                  {(messages[activeId] || []).map((m, i) => (
-                    <div
-                      key={i}
-                      className={`${styles.msg} ${
-                        m.from === "user" ? styles.msgUser : styles.msgTech
-                      }`}
-                    >
-                      {m.text}
-                      <time>now</time>
-                    </div>
-                  ))}
+                  {messages.map((m, i) => {
+                    const senderId = typeof m.senderId === 'object' ? m.senderId._id : m.senderId;
+                    const isCurrentUser = String(senderId) === String(currentUser?._id);
+                    return (
+                      <div
+                        key={m._id || i}
+                        className={`${styles.msg} ${
+                          isCurrentUser ? styles.msgUser : styles.msgTech
+                        }`}
+                      >
+                        <div>{m.content}</div>
+                        <time>
+                          {new Date(m.createdAt).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })} {new Date(m.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                        </time>
+                      </div>
+                    );
+                  })}
                 </div>
                 <form onSubmit={sendMessage} className={styles.inputBar}>
                   <textarea
@@ -131,6 +197,12 @@ export default function MessagesClient() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="Type your message..."
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage(e);
+                      }
+                    }}
                   />
                   <button className={styles.sendBtn} type="submit">
                     Send
@@ -138,7 +210,9 @@ export default function MessagesClient() {
                 </form>
               </div>
             ) : (
-              <div className={styles.empty}>Select a conversation.</div>
+              <div className={styles.empty}>
+                {conversations.length > 0 ? "Select a conversation" : "No conversations available"}
+              </div>
             )}
           </section>
         </main>
