@@ -1,7 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import dynamic from "next/dynamic";
 import styles from "./technician.module.css";
-import TechNavbar from "./TechNavbar";
 import {
   FaBriefcase,
   FaSpinner,
@@ -11,6 +11,20 @@ import {
   FaExclamationTriangle,
 } from "react-icons/fa";
 import Badge from "@/components/atoms/Badge";
+
+// Lazy load TechNavbar
+const TechNavbar = dynamic(() => import("./TechNavbar"), {
+  loading: () => (
+    <div
+      style={{
+        height: "64px",
+        background: "white",
+        borderBottom: "1px solid #e5e7eb",
+      }}
+    />
+  ),
+  ssr: false,
+});
 
 // Fallback sample data for when API fails
 const fallbackData = [
@@ -93,7 +107,19 @@ export default function TechnicianClient({ initialJobs = [] }) {
 
   return (
     <div className={styles.page}>
-      <TechNavbar />
+      <Suspense
+        fallback={
+          <div
+            style={{
+              height: "64px",
+              background: "white",
+              borderBottom: "1px solid #e5e7eb",
+            }}
+          />
+        }
+      >
+        <TechNavbar />
+      </Suspense>
 
       <main className={`container ${styles.main}`}>
         <div className={styles.welcome}>
@@ -102,7 +128,7 @@ export default function TechnicianClient({ initialJobs = [] }) {
               Welcome back, Technician! 👋
             </h1>
             <p className={styles.welcomeSubtitle}>
-              Here's your overview for today
+              Here&apos;s your overview for today
             </p>
           </div>
           {error && (

@@ -1,6 +1,39 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import TechnicianClient from "./TechnicianClient";
+import nextDynamic from "next/dynamic";
+import { Suspense } from "react";
+
+// Lazy load TechnicianClient with loading state
+const TechnicianClient = nextDynamic(() => import("./TechnicianClient"), {
+  loading: () => (
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#f8fafc",
+      }}
+    >
+      <div style={{ textAlign: "center" }}>
+        <div
+          style={{
+            width: "56px",
+            height: "56px",
+            border: "5px solid #e5e7eb",
+            borderTop: "5px solid #3b82f6",
+            borderRadius: "50%",
+            margin: "0 auto 20px",
+            animation: "spin 0.8s linear infinite",
+          }}
+        />
+        <p style={{ color: "#64748b", fontSize: "16px", fontWeight: "500" }}>
+          Loading Technician Dashboard...
+        </p>
+      </div>
+    </div>
+  ),
+});
 
 // Force dynamic rendering for authenticated pages
 export const dynamic = "force-dynamic";
@@ -41,5 +74,40 @@ export default async function TechnicianPage() {
     // Continue with empty array - client will use fallback data
   }
 
-  return <TechnicianClient initialJobs={initialJobs} />;
+  return (
+    <Suspense
+      fallback={
+        <div
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "#f8fafc",
+          }}
+        >
+          <div style={{ textAlign: "center" }}>
+            <div
+              style={{
+                width: "56px",
+                height: "56px",
+                border: "5px solid #e5e7eb",
+                borderTop: "5px solid #3b82f6",
+                borderRadius: "50%",
+                margin: "0 auto 20px",
+                animation: "spin 0.8s linear infinite",
+              }}
+            />
+            <p
+              style={{ color: "#64748b", fontSize: "16px", fontWeight: "500" }}
+            >
+              Loading Technician Dashboard...
+            </p>
+          </div>
+        </div>
+      }
+    >
+      <TechnicianClient initialJobs={initialJobs} />
+    </Suspense>
+  );
 }

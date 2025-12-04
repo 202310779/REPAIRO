@@ -256,7 +256,7 @@ export default function LoginClient() {
               {loading ? "Signing In..." : "Sign In"}
             </button>
             <p className={styles.muted}>
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <button
                 type="button"
                 className={styles.linkBtn}

@@ -1,14 +1,28 @@
 "use client";
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import dynamic from "next/dynamic";
 import styles from "./messages.module.css";
 import techStyles from "../technician.module.css";
-import TechNavbar from "../TechNavbar";
 import {
   FaComments,
   FaSearch,
   FaPaperPlane,
   FaUserCircle,
 } from "react-icons/fa";
+
+// Lazy load TechNavbar
+const TechNavbar = dynamic(() => import("../TechNavbar"), {
+  loading: () => (
+    <div
+      style={{
+        height: "64px",
+        background: "white",
+        borderBottom: "1px solid #e5e7eb",
+      }}
+    />
+  ),
+  ssr: false,
+});
 
 export default function TechnicianMessages() {
   const [threads, setThreads] = useState([
@@ -51,7 +65,19 @@ export default function TechnicianMessages() {
 
   return (
     <div className={techStyles.page}>
-      <TechNavbar />
+      <Suspense
+        fallback={
+          <div
+            style={{
+              height: "64px",
+              background: "white",
+              borderBottom: "1px solid #e5e7eb",
+            }}
+          />
+        }
+      >
+        <TechNavbar />
+      </Suspense>
 
       <div className={`container ${styles.frame}`}>
         <main className={styles.main}>

@@ -1,13 +1,96 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import styles from "./dashboard.module.css";
 import { FaUserCircle, FaChevronDown } from "react-icons/fa";
 import { useAuth } from "../../hooks/useAuth";
-import NewRepairRequest from "../components/NewRepairRequest";
-import RepairHistory from "../components/RepairHistory";
 import Badge from "@/components/atoms/Badge";
 import { JobStatus } from "@/interfaces/api.types";
+
+// Lazy load heavy components
+const NewRepairRequest = dynamic(
+  () => import("../components/NewRepairRequest"),
+  {
+    loading: () => (
+      <div
+        style={{
+          padding: "24px",
+          background: "white",
+          borderRadius: "12px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        }}
+      >
+        <div
+          style={{
+            height: "400px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div style={{ textAlign: "center" }}>
+            <div
+              style={{
+                width: "40px",
+                height: "40px",
+                border: "4px solid #e5e7eb",
+                borderTop: "4px solid #3b82f6",
+                borderRadius: "50%",
+                margin: "0 auto 12px",
+                animation: "spin 0.8s linear infinite",
+              }}
+            />
+            <p style={{ color: "#94a3b8", fontSize: "14px" }}>
+              Loading form...
+            </p>
+          </div>
+        </div>
+      </div>
+    ),
+    ssr: false,
+  }
+);
+
+const RepairHistory = dynamic(() => import("../components/RepairHistory"), {
+  loading: () => (
+    <div
+      style={{
+        padding: "24px",
+        background: "white",
+        borderRadius: "12px",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+      }}
+    >
+      <div
+        style={{
+          height: "300px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          <div
+            style={{
+              width: "40px",
+              height: "40px",
+              border: "4px solid #e5e7eb",
+              borderTop: "4px solid #3b82f6",
+              borderRadius: "50%",
+              margin: "0 auto 12px",
+              animation: "spin 0.8s linear infinite",
+            }}
+          />
+          <p style={{ color: "#94a3b8", fontSize: "14px" }}>
+            Loading history...
+          </p>
+        </div>
+      </div>
+    </div>
+  ),
+  ssr: false,
+});
 
 export default function DashboardClient({ initialJobs = [] }) {
   const [open, setOpen] = useState(false);
@@ -140,7 +223,46 @@ export default function DashboardClient({ initialJobs = [] }) {
 
       <main className={`container ${styles.main}`}>
         <section className={styles.left}>
-          <NewRepairRequest onSubmit={handleNewRepairSubmit} />
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  padding: "24px",
+                  background: "white",
+                  borderRadius: "12px",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                }}
+              >
+                <div
+                  style={{
+                    height: "400px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div style={{ textAlign: "center" }}>
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        border: "4px solid #e5e7eb",
+                        borderTop: "4px solid #3b82f6",
+                        borderRadius: "50%",
+                        margin: "0 auto 12px",
+                        animation: "spin 0.8s linear infinite",
+                      }}
+                    />
+                    <p style={{ color: "#94a3b8", fontSize: "14px" }}>
+                      Loading form...
+                    </p>
+                  </div>
+                </div>
+              </div>
+            }
+          >
+            <NewRepairRequest onSubmit={handleNewRepairSubmit} />
+          </Suspense>
         </section>
         <section className={styles.right}>
           <div className={styles.stats}>
@@ -208,7 +330,46 @@ export default function DashboardClient({ initialJobs = [] }) {
               <span className={styles.statValue}>{localStats.completed}</span>
             </div>
           </div>
-          <RepairHistory items={filteredItems} filterStatus={statusFilter} />
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  padding: "24px",
+                  background: "white",
+                  borderRadius: "12px",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                }}
+              >
+                <div
+                  style={{
+                    height: "300px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div style={{ textAlign: "center" }}>
+                    <div
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        border: "4px solid #e5e7eb",
+                        borderTop: "4px solid #3b82f6",
+                        borderRadius: "50%",
+                        margin: "0 auto 12px",
+                        animation: "spin 0.8s linear infinite",
+                      }}
+                    />
+                    <p style={{ color: "#94a3b8", fontSize: "14px" }}>
+                      Loading history...
+                    </p>
+                  </div>
+                </div>
+              </div>
+            }
+          >
+            <RepairHistory items={filteredItems} filterStatus={statusFilter} />
+          </Suspense>
         </section>
       </main>
     </div>

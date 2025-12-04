@@ -1,9 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import styles from "./profile.module.css";
-import TechNavbar from "../TechNavbar";
 import {
   FaPlus,
   FaRegTrashAlt,
@@ -11,6 +11,20 @@ import {
   FaCog,
   FaClock,
 } from "react-icons/fa";
+
+// Lazy load TechNavbar
+const TechNavbar = dynamic(() => import("../TechNavbar"), {
+  loading: () => (
+    <div
+      style={{
+        height: "64px",
+        background: "white",
+        borderBottom: "1px solid #e5e7eb",
+      }}
+    />
+  ),
+  ssr: false,
+});
 
 export default function TechnicianProfilePage() {
   const router = useRouter();
@@ -65,7 +79,19 @@ export default function TechnicianProfilePage() {
 
   return (
     <div className={styles.page}>
-      <TechNavbar />
+      <Suspense
+        fallback={
+          <div
+            style={{
+              height: "64px",
+              background: "white",
+              borderBottom: "1px solid #e5e7eb",
+            }}
+          />
+        }
+      >
+        <TechNavbar />
+      </Suspense>
 
       <div className={`container ${styles.grid}`} style={{ paddingTop: 0 }}>
         <section className={styles.card}>

@@ -1,4 +1,44 @@
-import LoginClient from "./LoginClient";
+import nextDynamic from "next/dynamic";
+import { Suspense } from "react";
+
+// Lazy load LoginClient with proper loading fallback
+const LoginClient = nextDynamic(() => import("./LoginClient"), {
+  loading: () => (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      }}
+    >
+      <div
+        style={{
+          padding: "24px",
+          background: "white",
+          borderRadius: "12px",
+          boxShadow: "0 10px 40px rgba(0,0,0,0.1)",
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          <div
+            style={{
+              width: "48px",
+              height: "48px",
+              border: "4px solid #e5e7eb",
+              borderTop: "4px solid #3b82f6",
+              borderRadius: "50%",
+              margin: "0 auto 16px",
+              animation: "spin 1s linear infinite",
+            }}
+          />
+          <p style={{ color: "#64748b", fontSize: "14px" }}>Loading...</p>
+        </div>
+      </div>
+    </div>
+  ),
+});
 
 // Force static generation for login page (SSG)
 export const dynamic = "force-static";
@@ -10,5 +50,45 @@ export const metadata = {
 };
 
 export default function LoginPage() {
-  return <LoginClient />;
+  return (
+    <Suspense
+      fallback={
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "100vh",
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          }}
+        >
+          <div
+            style={{
+              padding: "24px",
+              background: "white",
+              borderRadius: "12px",
+              boxShadow: "0 10px 40px rgba(0,0,0,0.1)",
+            }}
+          >
+            <div style={{ textAlign: "center" }}>
+              <div
+                style={{
+                  width: "48px",
+                  height: "48px",
+                  border: "4px solid #e5e7eb",
+                  borderTop: "4px solid #3b82f6",
+                  borderRadius: "50%",
+                  margin: "0 auto 16px",
+                  animation: "spin 1s linear infinite",
+                }}
+              />
+              <p style={{ color: "#64748b", fontSize: "14px" }}>Loading...</p>
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <LoginClient />
+    </Suspense>
+  );
 }

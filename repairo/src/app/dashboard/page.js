@@ -1,6 +1,39 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import DashboardClient from "./DashboardClient";
+import nextDynamic from "next/dynamic";
+import { Suspense } from "react";
+
+// Lazy load DashboardClient with loading state
+const DashboardClient = nextDynamic(() => import("./DashboardClient"), {
+  loading: () => (
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#f8fafc",
+      }}
+    >
+      <div style={{ textAlign: "center" }}>
+        <div
+          style={{
+            width: "56px",
+            height: "56px",
+            border: "5px solid #e5e7eb",
+            borderTop: "5px solid #3b82f6",
+            borderRadius: "50%",
+            margin: "0 auto 20px",
+            animation: "spin 0.8s linear infinite",
+          }}
+        />
+        <p style={{ color: "#64748b", fontSize: "16px", fontWeight: "500" }}>
+          Loading Dashboard...
+        </p>
+      </div>
+    </div>
+  ),
+});
 
 // Force dynamic rendering for authenticated pages
 export const dynamic = "force-dynamic";
@@ -41,5 +74,40 @@ export default async function DashboardPage() {
     // Continue with empty array - client will handle it
   }
 
-  return <DashboardClient initialJobs={initialJobs} />;
+  return (
+    <Suspense
+      fallback={
+        <div
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "#f8fafc",
+          }}
+        >
+          <div style={{ textAlign: "center" }}>
+            <div
+              style={{
+                width: "56px",
+                height: "56px",
+                border: "5px solid #e5e7eb",
+                borderTop: "5px solid #3b82f6",
+                borderRadius: "50%",
+                margin: "0 auto 20px",
+                animation: "spin 0.8s linear infinite",
+              }}
+            />
+            <p
+              style={{ color: "#64748b", fontSize: "16px", fontWeight: "500" }}
+            >
+              Loading Dashboard...
+            </p>
+          </div>
+        </div>
+      }
+    >
+      <DashboardClient initialJobs={initialJobs} />
+    </Suspense>
+  );
 }
