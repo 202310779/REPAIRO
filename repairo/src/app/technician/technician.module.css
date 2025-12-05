@@ -415,6 +415,19 @@
   text-decoration: underline;
 }
 
+.navLinks a.active {
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  color: white;
+  font-weight: 600;
+  opacity: 1;
+}
+
+.navLinks a.active:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #6d28d9 100%);
+  color: white;
+  text-decoration: none;
+}
+
 .user {
   position: relative;
 }

@@ -3,8 +3,15 @@ import connectDB from "../../../../lib/mongo";
 import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
 import User from "../../../../models/user";
+import { v2 as cloudinary } from "cloudinary";
 
 const { JWT_SECRET = "", JWT_EXPIRES_IN = "7d" } = process.env;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(request) {
   try {
@@ -35,7 +42,7 @@ export async function POST(request) {
         return NextResponse.json({ error: 'Passwords do not match' }, { status: 400 });
     }
 
-    const userRole = role === 'technician' ? 'technician' : 'customer';
+    const userRole = role === 'technician' ? 'technician' : 'user';
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -44,11 +51,44 @@ export async function POST(request) {
       return NextResponse.json({ error: 'User already exists' }, { status: 400 });
     }
 
+    let avatarUrl = null;
+    try {
+      const result = await cloudinary.search
+        .expression('resource_type:image')
+        .max_results(100)
+        .execute();
+
+      if (result && result.resources && result.resources.length > 0) {
+        const randomIndex = Math.floor(Math.random() * result.resources.length);
+        const randomImage = result.resources[randomIndex];
+
+        avatarUrl = cloudinary.url(randomImage.public_id, {
+          transformation: [
+            { width: 200, height: 200, crop: 'fill', gravity: 'auto' },
+            { quality: 'auto', fetch_format: 'auto' }
+          ],
+          secure: true,
+        });
+        
+        console.log(`Assigned avatar: ${randomImage.public_id}`);
+      } else {
+        const randomColors = ['3b82f6', '10b981', 'f59e0b', 'ef4444', '8b5cf6', 'ec4899'];
+        const randomColor = randomColors[Math.floor(Math.random() * randomColors.length)];
+        avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&size=200&background=${randomColor}&color=fff`;
+      }
+    } catch (error) {
+      console.error('Error fetching avatar from Cloudinary:', error);
+      const randomColors = ['3b82f6', '10b981', 'f59e0b', 'ef4444', '8b5cf6', 'ec4899'];
+      const randomColor = randomColors[Math.floor(Math.random() * randomColors.length)];
+      avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&size=200&background=${randomColor}&color=fff`;
+    }
+
     const newUser = new User({
       email,
       username,
       password: hashedPassword,
       role: userRole,
+      avatarUrl,
       ...(userRole === 'technician' && {
         phone,
         skills: Array.isArray(skills) ? skills : []

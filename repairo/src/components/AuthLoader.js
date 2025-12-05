@@ -17,7 +17,6 @@ export default function AuthLoader({
             <circle cx="25" cy="25" r="20" className={styles.ringBg} />
             <circle cx="25" cy="25" r="20" className={styles.ringProgress} />
           </svg>
-          {/* removed decorative dots per request */}
         </div>
         <div className={styles.text}>
           <strong>{message}</strong>

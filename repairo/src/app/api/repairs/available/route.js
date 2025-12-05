@@ -9,10 +9,8 @@ export async function GET(request) {
   try {
     await connectDB();
 
-    // Try to get role from headers first (set by middleware)
     let userRole = request.headers.get("X-User-Role");
     
-    // If not in headers, try to decode from token directly
     if (!userRole) {
       const authHeader = request.headers.get("authorization");
       const token = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;

@@ -40,11 +40,9 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: "Invalid repair ID" }, { status: 400 });
     }
 
-    // Try to get userId from headers first (set by middleware)
     let userId = request.headers.get("X-User-Id");
     let userRole = request.headers.get("X-User-Role");
     
-    // If not in headers, try to decode from token directly
     if (!userId) {
       const authHeader = request.headers.get("authorization");
       const token = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
@@ -73,7 +71,6 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: "Repair not found" }, { status: 404 });
     }
 
-    // Check permissions: owner or assigned technician can update
     const isOwner = repair.userId.toString() === userId;
     const isTechnician = repair.technicianId?.toString() === userId;
     
@@ -81,12 +78,10 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Update fields
     if (status) repair.status = status;
     if (description) repair.description = description;
     if (title) repair.title = title;
     
-    // Only customer can rate
     if (rating !== undefined && isOwner) {
       if (repair.status !== "Completed") {
         return NextResponse.json({ error: "Can only rate completed repairs" }, { status: 400 });
@@ -123,7 +118,6 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: "Invalid repair ID" }, { status: 400 });
     }
 
-    // Try to get userId from headers
     let userId = request.headers.get("X-User-Id");
     let userRole = request.headers.get("X-User-Role");
     
@@ -152,7 +146,6 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: "Repair not found" }, { status: 404 });
     }
 
-    // Only owner or admin can delete
     if (repair.userId.toString() !== userId && userRole !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

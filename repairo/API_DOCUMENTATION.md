@@ -14,7 +14,7 @@ interface User {
   username: string;         // Display name (3-50 chars)
   email: string;            // Unique email (5-100 chars)
   password: string;         // Hashed password (never sent to client)
-  role: 'customer' | 'technician' | 'admin';
+  role: 'user' | 'technician' | 'admin';
   phone?: string;           // Phone number (technicians only)
   skills?: string[];        // Array of skills (technicians only)
   certifications?: string;  // Certifications (technicians only)
@@ -102,7 +102,7 @@ Authenticate user and receive JWT token.
     "_id": "507f1f77bcf86cd799439011",
     "email": "user@example.com",
     "username": "johndoe",
-    "role": "customer"
+    "role": "user"
   }
 }
 ```
@@ -124,7 +124,7 @@ Create new user account (customer or technician).
   "username": "string (required, 3-50 chars)",
   "password": "string (required, 8-100 chars)",
   "confirmPassword": "string (required)",
-  "role": "customer | technician (optional, default: customer)",
+  "role": "user | technician (optional, default: user)",
   "phone": "string (optional, for technicians)",
   "skills": "string[] (optional, for technicians)",
   "certifications": "string (optional, for technicians)",
@@ -140,7 +140,7 @@ Create new user account (customer or technician).
     "_id": "507f1f77bcf86cd799439011",
     "email": "user@example.com",
     "username": "johndoe",
-    "role": "customer"
+    "role": "user"
   },
   "message": "User created successfully"
 }
@@ -165,7 +165,7 @@ Get current user profile.
     "_id": "507f1f77bcf86cd799439011",
     "email": "user@example.com",
     "username": "johndoe",
-    "role": "customer",
+    "role": "user",
     "phone": "+1234567890",
     "skills": ["iPhone Repair", "Android Repair"],
     "certifications": "Apple Certified",
@@ -383,7 +383,7 @@ Get messages for repair request or list all conversations.
       "title": "Phone - iPhone 12",
       "status": "In Progress"
     },
-    "customer": { /* customer user object */ },
+    "user": { /* customer user object */ },
     "technician": { /* technician user object */ },
     "lastMessage": "I'll arrive at 3 PM",
     "lastMessageTime": "2025-12-05T14:00:00.000Z",
@@ -400,7 +400,7 @@ Get messages for repair request or list all conversations.
     "senderId": {
       "username": "johndoe",
       "email": "john@example.com",
-      "role": "customer"
+      "role": "user"
     },
     "receiverId": {
       "username": "techsmith",
@@ -445,7 +445,7 @@ Send message in repair conversation.
   "senderId": {
     "username": "johndoe",
     "email": "john@example.com",
-    "role": "customer"
+    "role": "user"
   },
   "receiverId": {
     "username": "techsmith",
@@ -659,3 +659,4 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 # Node Environment
 NODE_ENV=development
 ```
+

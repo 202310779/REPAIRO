@@ -2,7 +2,6 @@
 import { useMemo } from "react";
 import AuthService from "../services/authService";
 
-// Minimal authorization helper. Checks token presence and optional roles.
 export function useAuthorization({
   requireRoles = [],
   allowGuest = false,
@@ -11,7 +10,6 @@ export function useAuthorization({
 
   const allowed = useMemo(() => {
     if (!token) return allowGuest;
-    // Role evaluation can be extended later; keep permissive by default
     return true;
   }, [token, allowGuest]);
 

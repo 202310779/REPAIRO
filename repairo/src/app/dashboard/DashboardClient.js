@@ -2,13 +2,13 @@
 import { useState, useEffect, Suspense } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import styles from "./dashboard.module.css";
 import { FaUserCircle, FaChevronDown } from "react-icons/fa";
 import { useAuth } from "../../hooks/useAuth";
 import Badge from "@/components/atoms/Badge";
 import { JobStatus } from "@/interfaces/api.types";
 
-// Lazy load heavy components
 const NewRepairRequest = dynamic(
   () => import("../components/NewRepairRequest"),
   {
@@ -94,11 +94,18 @@ const RepairHistory = dynamic(() => import("../components/RepairHistory"), {
 
 export default function DashboardClient({ initialJobs = [] }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
   const { logout } = useAuth();
   const [jobs, setJobs] = useState(initialJobs);
   const [loading, setLoading] = useState(false);
+  
+  const isActive = (path) => {
+    if (path === "/dashboard") {
+      return pathname === "/dashboard";
+    }
+    return pathname?.startsWith(path);
+  };
 
-  // Poll for updates every 30 seconds
   const fetchJobs = async () => {
     try {
       setLoading(true);
@@ -171,7 +178,6 @@ export default function DashboardClient({ initialJobs = [] }) {
 
   return (
     <div className={styles.page}>
-      {/* Navbar */}
       <header className={styles.navbar}>
         <div className={`container ${styles.navInner}`}>
           <Link href="/dashboard" className={styles.brand}>
@@ -183,9 +189,24 @@ export default function DashboardClient({ initialJobs = [] }) {
             <span>Repairo</span>
           </Link>
           <nav className={styles.navLinks}>
-            <Link href="/dashboard">Dashboard</Link>
-            <Link href="/dashboard/messages">Messages</Link>
-            <Link href="/dashboard/profile">Profile</Link>
+            <Link 
+              href="/dashboard"
+              className={isActive("/dashboard") ? styles.active : ""}
+            >
+              Dashboard
+            </Link>
+            <Link 
+              href="/dashboard/messages"
+              className={isActive("/dashboard/messages") ? styles.active : ""}
+            >
+              Messages
+            </Link>
+            <Link 
+              href="/dashboard/profile"
+              className={isActive("/dashboard/profile") ? styles.active : ""}
+            >
+              Profile
+            </Link>
           </nav>
           <div className={styles.user}>
             <button

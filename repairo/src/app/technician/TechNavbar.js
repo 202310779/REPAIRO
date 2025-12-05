@@ -16,6 +16,13 @@ export default function TechNavbar() {
     setOpen(false);
     logout();
   };
+  
+  const isActive = (path) => {
+    if (path === "/technician") {
+      return pathname === "/technician";
+    }
+    return pathname?.startsWith(path);
+  };
 
   return (
     <>
@@ -32,10 +39,30 @@ export default function TechNavbar() {
             <span>Repairo Tech</span>
           </Link>
           <nav className={styles.navLinks}>
-            <Link href="/technician">Dashboard</Link>
-            <Link href="/technician/available">Available Jobs</Link>
-            <Link href="/technician/messages">Messages</Link>
-            <Link href="/technician/profile">Profile</Link>
+            <Link 
+              href="/technician" 
+              className={isActive("/technician") ? styles.active : ""}
+            >
+              Dashboard
+            </Link>
+            <Link 
+              href="/technician/available"
+              className={isActive("/technician/available") ? styles.active : ""}
+            >
+              Available Jobs
+            </Link>
+            <Link 
+              href="/technician/messages"
+              className={isActive("/technician/messages") ? styles.active : ""}
+            >
+              Messages
+            </Link>
+            <Link 
+              href="/technician/profile"
+              className={isActive("/technician/profile") ? styles.active : ""}
+            >
+              Profile
+            </Link>
           </nav>
           <div className={styles.user}>
             <button

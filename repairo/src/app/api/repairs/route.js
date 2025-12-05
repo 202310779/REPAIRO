@@ -3,7 +3,6 @@ import connectDB from "@/lib/mongo";
 import Repair from "@/models/repair";
 import mongoose from "mongoose";
 
-// Force dynamic rendering for API routes
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -11,11 +10,9 @@ export async function GET(request) {
   try {
     await connectDB();
 
-    // Try to get user info from headers first (set by middleware)
     let userId = request.headers.get("X-User-Id");
     let userRole = request.headers.get("X-User-Role");
 
-    // If not in headers, try to decode from token directly
     if (!userId) {
       const authHeader = request.headers.get("authorization");
       const token = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
@@ -36,7 +33,6 @@ export async function GET(request) {
 
     let query = {};
 
-    // Filter based on user role
     if (userRole === "technician" && userId) {
       query.technicianId = userId;
       console.log("GET /api/repairs - Filtering by technicianId:", userId);
@@ -54,7 +50,6 @@ export async function GET(request) {
 
     console.log("GET /api/repairs - Found items:", items.length, "Query:", JSON.stringify(query));
 
-    // Add cache control headers
     const response = NextResponse.json(items, { status: 200 });
     response.headers.set(
       "Cache-Control",
@@ -74,11 +69,9 @@ export async function POST(request) {
   try {
     await connectDB();
 
-    // Try to get userId from headers first (set by middleware)
     let userId = request.headers.get("X-User-Id");
     let userRole = request.headers.get("X-User-Role");
     
-    // If not in headers, try to decode from token directly
     if (!userId) {
       const authHeader = request.headers.get("authorization");
       const token = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;

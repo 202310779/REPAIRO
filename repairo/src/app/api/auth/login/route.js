@@ -1,5 +1,3 @@
-// src/app/api/auth/login/route.js
-// import clientPromise from "../../../../services/mongoClient";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import connectDB from "../../../../lib/mongo";
@@ -30,7 +28,7 @@ export async function POST(request) {
     const payload = {
       sub: String(user._id),
       email: user.email,
-      role: user.role || "customer",
+      role: user.role || "user",
     };
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
@@ -38,13 +36,11 @@ export async function POST(request) {
       _id: user._id,
       email: user.email,
       username: user.username,
-      role: user.role || "customer",
+      role: user.role || "user",
     };
 
-    // Create response with cookie
     const response = NextResponse.json({ token, user: safeUser }, { status: 200 });
     
-    // Set HttpOnly cookie
     response.cookies.set('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

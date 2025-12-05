@@ -71,6 +71,7 @@ export const viewport = {
 
 import "./globals.css";
 import ToasterClient from "../components/ToasterClient";
+import QueryProvider from "../components/QueryProvider";
 
 export default function RootLayout({ children }) {
   return (
@@ -80,8 +81,10 @@ export default function RootLayout({ children }) {
         <link rel="icon" href="/images/logo.png" />
       </head>
       <body>
-        <ToasterClient />
-        {children}
+        <QueryProvider>
+          <ToasterClient />
+          {children}
+        </QueryProvider>
       </body>
     </html>
   );

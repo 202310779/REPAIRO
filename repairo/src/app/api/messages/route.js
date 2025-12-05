@@ -157,10 +157,8 @@ export async function POST(request) {
   try {
     await connectDB();
 
-    // Try to get user info from headers first (set by middleware)
     let userId = request.headers.get("X-User-Id");
     
-    // If not in headers, try to decode from token directly
     if (!userId) {
       const authHeader = request.headers.get("authorization");
       const token = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
@@ -199,13 +197,10 @@ export async function POST(request) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Automatically determine the receiver based on who is sending
     let receiverId;
     if (String(repair.userId) === userId) {
-      // Customer is sending, so receiver is technician
       receiverId = repair.technicianId;
     } else {
-      // Technician is sending, so receiver is customer
       receiverId = repair.userId;
     }
 

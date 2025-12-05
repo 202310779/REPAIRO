@@ -11,11 +11,9 @@ export async function POST(request, { params }) {
   try {
     await connectDB();
 
-    // Try to get user info from headers first (set by middleware)
     let userId = request.headers.get("X-User-Id");
     let userRole = request.headers.get("X-User-Role");
 
-    // If not in headers, try to decode from token directly
     if (!userId) {
       const authHeader = request.headers.get("authorization");
       const token = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
@@ -66,11 +64,9 @@ export async function POST(request, { params }) {
 
     await repair.save();
 
-    // Get technician details for the automated message
     const technician = await User.findById(userId).select("username").lean();
     const technicianName = technician?.username || "A technician";
 
-    // Automatically send a message to the customer
     try {
       const autoMessage = new Message({
         senderId: userId,
@@ -84,7 +80,6 @@ export async function POST(request, { params }) {
       console.log("Auto-message sent to customer after job claim");
     } catch (msgErr) {
       console.error("Failed to send auto-message:", msgErr);
-      // Don't fail the claim if message fails
     }
 
     const updatedRepair = await Repair.findById(id)

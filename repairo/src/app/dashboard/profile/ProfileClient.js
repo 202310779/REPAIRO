@@ -9,6 +9,7 @@ export default function ProfileClient() {
     username: "",
     email: "",
   });
+  const [avatarUrl, setAvatarUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -29,6 +30,7 @@ export default function ProfileClient() {
           username: data.user.username || "",
           email: data.user.email || "",
         });
+        setAvatarUrl(data.user.avatarUrl || "");
       }
     } catch (err) {
       console.error("Error fetching profile:", err);
@@ -45,9 +47,21 @@ export default function ProfileClient() {
   
   async function saveProfile(e) {
     e.preventDefault();
+    
+    if (!form.username || !form.email) {
+      toast.error("Username and email are required");
+      return;
+    }
+    
     try {
       setSaving(true);
       const token = localStorage.getItem("token");
+      
+      if (!token) {
+        toast.error("Not authenticated");
+        return;
+      }
+      
       const response = await fetch("/api/auth/profile", {
         method: "PUT",
         headers: {
@@ -55,21 +69,22 @@ export default function ProfileClient() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          username: form.username,
-          email: form.email,
+          username: form.username.trim(),
+          email: form.email.trim(),
         }),
       });
 
+      const data = await response.json();
+      
       if (response.ok) {
-        toast.success("Profile updated successfully!");
-        fetchProfile();
+        toast.success(data.message || "Profile updated successfully!");
+        await fetchProfile();
       } else {
-        const error = await response.json();
-        toast.error(error.error || "Failed to update profile");
+        toast.error(data.error || "Failed to update profile");
       }
     } catch (err) {
       console.error("Error saving profile:", err);
-      toast.error("Failed to update profile");
+      toast.error("Failed to update profile. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -107,6 +122,49 @@ export default function ProfileClient() {
         <div style={{ maxWidth: '600px', margin: '0 auto', paddingTop: '24px' }}>
           <section className={styles.card}>
             <h2 className={styles.cardTitle}>Profile Information</h2>
+            
+            {/* Avatar Display */}
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              marginBottom: '24px' 
+            }}>
+              <div style={{
+                width: '120px',
+                height: '120px',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                border: '4px solid #3b82f6',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+              }}>
+                {avatarUrl ? (
+                  <img 
+                    src={avatarUrl} 
+                    alt="Profile Avatar" 
+                    style={{ 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'cover' 
+                    }} 
+                  />
+                ) : (
+                  <div style={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: 'white',
+                    fontSize: '48px',
+                    fontWeight: 'bold'
+                  }}>
+                    {form.username ? form.username.charAt(0).toUpperCase() : '?'}
+                  </div>
+                )}
+              </div>
+            </div>
+
             <form onSubmit={saveProfile} className={styles.form}>
               <label className={styles.field}>
                 <span>Username</span>

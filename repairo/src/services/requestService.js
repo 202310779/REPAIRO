@@ -23,7 +23,6 @@ async function request(path, options = {}) {
     headers = {},
     body,
     params,
-    // you can override token injection if needed
     withAuth = true,
   } = options;
 

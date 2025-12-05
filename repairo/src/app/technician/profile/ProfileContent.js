@@ -33,7 +33,7 @@ export default function TechnicianProfileContent() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [avatar, setAvatar] = useState(null);
+  const [avatarUrl, setAvatarUrl] = useState("");
   const [skills, setSkills] = useState([]);
   const [newSkill, setNewSkill] = useState("");
 
@@ -59,6 +59,7 @@ export default function TechnicianProfileContent() {
         setUsername(user.username || "");
         setEmail(user.email || "");
         setPhone(user.phone || "");
+        setAvatarUrl(user.avatarUrl || "");
         setSkills(user.skills || []);
       } else {
         toast.error("Failed to load profile");
@@ -74,14 +75,6 @@ export default function TechnicianProfileContent() {
   useEffect(() => {
     fetchProfile();
   }, []);
-
-  function handleAvatarChange(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => setAvatar(ev.target.result);
-    reader.readAsDataURL(file);
-  }
 
   function addSkill() {
     if (!newSkill.trim()) return;
@@ -154,6 +147,50 @@ export default function TechnicianProfileContent() {
           <h3>
             <FaUserCircle style={{ color: "#3b82f6" }} /> Technician Identity
           </h3>
+          
+          {/* Avatar Display */}
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            marginBottom: '24px',
+            marginTop: '16px'
+          }}>
+            <div style={{
+              width: '120px',
+              height: '120px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              border: '4px solid #3b82f6',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+            }}>
+              {avatarUrl ? (
+                <img 
+                  src={avatarUrl} 
+                  alt="Profile Avatar" 
+                  style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: 'cover' 
+                  }} 
+                />
+              ) : (
+                <div style={{
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  fontSize: '48px',
+                  fontWeight: 'bold'
+                }}>
+                  {username ? username.charAt(0).toUpperCase() : '?'}
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className={styles.section}>
             <div className={styles.row}>
               <label>Username <span style={{ color: '#ef4444' }}>*</span></label>

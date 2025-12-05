@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { jwtVerify } from "jose";
 
-// Use Edge Runtime for faster authentication checks
 export const config = {
   matcher: [
     /*
@@ -77,7 +76,6 @@ function matchesRoute(pathname, routes) {
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
 
-  // Skip middleware for static files and Next.js internals
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/static") ||
@@ -86,20 +84,16 @@ export async function middleware(request) {
     return NextResponse.next();
   }
 
-  // Clone the response to add headers
   const response = NextResponse.next();
 
-  // Add security headers to all responses
   Object.entries(SECURITY_HEADERS).forEach(([key, value]) => {
     response.headers.set(key, value);
   });
 
-  // Allow public routes without authentication
   if (matchesRoute(pathname, PUBLIC_ROUTES)) {
     return response;
   }
 
-  // Extract token from cookie or Authorization header
   let token = request.cookies.get("token")?.value;
 
   if (!token) {
@@ -109,13 +103,11 @@ export async function middleware(request) {
     }
   }
 
-  // Development bypass token
   if (token === "dev-token") {
     console.warn("⚠️  Using dev-token bypass - not for production!");
     return response;
   }
 
-  // No token found - redirect to login or return 401 for API routes
   if (!token) {
     if (pathname.startsWith("/api/")) {
       return NextResponse.json(
@@ -129,11 +121,9 @@ export async function middleware(request) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Verify token
   const decoded = await verifyToken(token);
 
   if (!decoded) {
-    // Invalid token - clear cookie and redirect/return error
     if (pathname.startsWith("/api/")) {
       console.error("Middleware - Token verification failed for:", pathname);
       return NextResponse.json(
@@ -151,7 +141,6 @@ export async function middleware(request) {
 
   const { role } = decoded;
 
-  // Add user info to request headers for API routes
   if (pathname.startsWith("/api/")) {
     console.log("Middleware - Setting headers for API route:", pathname, {
       userId: decoded.userId,
@@ -168,7 +157,6 @@ export async function middleware(request) {
       },
     });
     
-    // Add security headers
     Object.entries(SECURITY_HEADERS).forEach(([key, value]) => {
       modifiedResponse.headers.set(key, value);
     });

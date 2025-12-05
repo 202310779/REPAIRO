@@ -30,7 +30,6 @@ export function useAuth() {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
 
-  // Hydrate profile silently if token exists (non-destructive)
   useEffect(() => {
     const token = AuthService.authStorage.get();
     if (!token || user) return;

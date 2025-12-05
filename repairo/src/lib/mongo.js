@@ -6,7 +6,6 @@ if (!MONGODB_URI) {
   throw new Error("Please define MONGODB_URI in .env.local");
 }
 
-// Cached connection to prevent multiple connections in dev mode
 let cached = global.mongoose;
 
 if (!cached) {
@@ -15,11 +14,9 @@ if (!cached) {
 
 async function connectDB() {
   if (cached.conn) {
-    // Check if connection is still alive
     if (cached.conn.connection.readyState === 1) {
       return cached.conn;
     }
-    // Connection died, reset cache
     cached.conn = null;
     cached.promise = null;
   }
