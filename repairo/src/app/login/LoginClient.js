@@ -93,10 +93,14 @@ export default function LoginClient() {
       setSignupPhone("");
       setSignupSkills([]);
       setSignupSkillInput("");
-      setTimeout(() => {
-        setTab("login");
-        router.push("/login");
-      }, 1200);
+      // Redirect to appropriate login view and preselect role
+      setTab("login");
+      if (signupUserType === "technician") {
+        setLoginUserType("technician");
+      } else {
+        setLoginUserType("customer");
+      }
+      router.push("/login");
     } catch (err) {
       toast.error(err?.message || "Registration failed");
     }
